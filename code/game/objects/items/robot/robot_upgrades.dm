@@ -32,8 +32,6 @@
 /obj/item/borg/upgrade/uncertified
 	name = "uncertified robotic module"
 	desc = "You shouldn't be seeing this!"
-	description_info = "This special chip will forcibly change a robot's module to a new one. In most cases, this is the only way for the robot to obtain these modules. Once you've unlocked the robot's maintenance hatch with an ID card and opened it with a crowbar, click the bot to install this chip."
-	description_fluff = "No TSC, industrial concern, or military organization worth their salt would dare install uncertified hardware on their robotic platforms. Nevertheless, in backwater sectors of the universe, there is a thriving grey market for third-party modular configurations such as this one."
 	icon_state = "cyborg_upgrade5"
 	require_module = 0
 	var/new_module = null
@@ -51,21 +49,13 @@
 
 /obj/item/borg/upgrade/uncertified/party
 	name = "\improper Madhouse Productions Official Party Module"
-	desc = "A weird-looking chip with third-party additions crudely soldered in. It feels cheap and chintzy in the hand."
+	desc = "A weird-looking chip with third-party additions crudely soldered in. It feels cheap and chintzy in the hand. Inscribed into the cheap-feeling circuit is the logo of Madhouse Productions, a group that arranges parties and entertainment venues."
 	new_module = "Party"
-
-/obj/item/borg/upgrade/uncertified/party/Initialize()
-	. = ..()
-	description_fluff += "<br><br>Inscribed into the cheap-feeling circuit is the logo of Madhouse Productions, a group that arranges parties and entertainment venues."
 
 /obj/item/borg/upgrade/uncertified/combat
 	name = "ancient module"
-	desc = "A well-made but somewhat archaic looking bit of circuitry."
+	desc = "A well-made but somewhat archaic looking bit of circuitry. The chip is stamped with an insignia: a gun protruding from a stylized fist."
 	new_module = "Combat"
-
-/obj/item/borg/upgrade/uncertified/combat/Initialize()
-	. = ..()
-	description_fluff += "<br><br>The chip is stamped with an insignia: a gun protruding from a stylized fist."
 
 /obj/item/borg/upgrade/rename
 	name = "robot reclassification board"
@@ -131,13 +121,14 @@
 	require_module = 1
 
 /obj/item/borg/upgrade/vtec/action(var/mob/living/silicon/robot/R)
-	if(..()) return 0
+	if(..()) return FALSE
 
-	if(R.speed == -1)
-		return 0
+	if(R.vtec == TRUE)
+		return FALSE
 
 	R.speed--
-	return 1
+	R.vtec = TRUE
+	return TRUE
 
 
 /obj/item/borg/upgrade/weaponcooler
@@ -157,7 +148,7 @@
 
 	var/obj/item/weapon/gun/energy/gun/secure/mounted/T = locate() in R.module
 	if(!T)
-		T = locate() in R.module.modules
+		T = locate() in R.module.equipment
 	if(!T)
 		to_chat(usr, "This robot has had its energy gun removed!")
 		return 0
@@ -186,8 +177,8 @@
 		to_chat(usr, "There's no mounting point for the module!")
 		return 0
 	else
-		R.module.modules += new/obj/item/weapon/tank/jetpack/carbondioxide
-		for(var/obj/item/weapon/tank/jetpack/carbondioxide in R.module.modules)
+		R.module.equipment += new/obj/item/weapon/tank/jetpack/carbondioxide
+		for(var/obj/item/weapon/tank/jetpack/carbondioxide in R.module.equipment)
 			R.internals = src
 		//R.icon_state="Miner+j"
 		return 1
@@ -206,7 +197,7 @@
 		to_chat(usr, "There's no mounting point for the module!")
 		return 0
 	else
-		R.module.modules += new/obj/item/weapon/rcd/borg(R.module)
+		R.module.equipment += new/obj/item/weapon/rcd/borg(R.module)
 		return 1
 
 /obj/item/borg/upgrade/syndicate/

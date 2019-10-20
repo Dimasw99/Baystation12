@@ -44,13 +44,20 @@
 
 /obj/item/clothing/suit/armor/sunsuit
 	name = "knight's armor"
-	desc = "Now, you can be the knight in shining armor you’ve always wanted to be. With complementary sun insignia."
+	desc = "Now, you can be the knight in shining armor you've always wanted to be. With complementary sun insignia."
 	icon_state = "star_champion"
-	armor = list(melee = 75, bullet = 50, laser = 55, energy = 40, bomb = 50, bio = 10, rad = 0)
+	armor = list(
+		melee = ARMOR_MELEE_VERY_HIGH, 
+		bullet = ARMOR_BALLISTIC_RIFLE, 
+		laser = ARMOR_LASER_HANDGUNS, 
+		energy = ARMOR_ENERGY_RESISTANT, 
+		bomb = ARMOR_BOMB_PADDED, 
+		bio = ARMOR_BIO_MINOR
+	)
 
 /obj/item/clothing/head/helmet/sunhelm
 	name = "knight's helm"
-	desc = "It’s a shiny metal helmet. It looks ripped straight out of the Dark Ages, actually."
+	desc = "It's a shiny metal helmet. It looks ripped straight out of the Dark Ages, actually."
 	icon_state = "star_champion"
 	flags_inv = HIDEEARS | BLOCKHAIR
 
@@ -58,43 +65,57 @@
 	name = "oracle's robe"
 	desc = "The robes of a priest. One that praises the sun, apparently. Well, it certainly reflects light well."
 	icon_state = "star_oracle"
-	armor = list(melee = 25, bullet = 20, laser = 45,energy = 40, bomb = 25, bio = 10, rad = 0)
+	armor = list(
+		melee = ARMOR_MELEE_KNIVES, 
+		bullet = ARMOR_BALLISTIC_MINOR, 
+		laser = ARMOR_LASER_HANDGUNS,
+		energy = ARMOR_ENERGY_RESISTANT, 
+		bomb = ARMOR_BOMB_PADDED, 
+		bio = ARMOR_BIO_MINOR
+	)
 
-/obj/item/clothing/suit/shadowsuit
+/obj/item/clothing/suit/armor/sunrobe/Initialize()
+	. = ..()
+	set_light(0.3, 0.1, 4, 2)
+
+/obj/item/clothing/suit/space/shadowsuit
 	name = "traitor's cloak"
 	desc = "There is absolutely nothing visible through the fabric. The shadows stick to your skin when you touch it."
+	item_flags = ITEM_FLAG_THICKMATERIAL | ITEM_FLAG_AIRTIGHT
+	min_pressure_protection = 0
 	icon_state = "star_traitor"
 
-/obj/item/clothing/head/shadowhood
+/obj/item/clothing/head/helmet/space/shadowhood
 	name = "traitor's hood"
-	desc = "No light can pierce this hood. It’s unsettling."
+	desc = "No light can pierce this hood. It's unsettling."
 	icon_state = "star_traitor"
 	flags_inv = HIDEEARS | BLOCKHAIR
 
 /obj/item/weapon/material/knife/ritual/shadow
 	name = "black death"
-	desc = "An obsidian dagger. The singed remains of a green cloth are wrapped around the “handle.”"
+	desc = "An obsidian dagger. The singed remains of a green cloth are wrapped around the 'handle.'"
 	force_divisor = 0.3
 	var/charge = 5
 
-/obj/item/weapon/material/knife/ritual/shadow/attack(var/mob/living/M, var/mob/living/user, var/hit_zone)
+/obj/item/weapon/material/knife/ritual/shadow/apply_hit_effect(var/mob/living/target, var/mob/living/user, var/hit_zone)
 	. = ..()
-	if(.)
-		if(charge)
-			if(M.getBruteLoss() > 15)
-				var/datum/reagents/R = M.reagents
-				R.add_reagent(/datum/reagent/toxin/bromide, 5)
-				new /obj/effect/temporary(get_turf(M),3, 'icons/effects/effects.dmi', "fire_goon")
-				charge--
-		else
-			user.adjustFireLoss(5)
-			if(prob(5))
-				to_chat(user, "<span class='warning'>\The [src] appears to be out of power!</span>")
-			new /obj/effect/temporary(get_turf(user),3, 'icons/effects/effects.dmi', "fire_goon")
+	if(charge)
+		if(target.getBruteLoss() > 15)
+			var/datum/reagents/R = target.reagents
+			if(!R)
+				return
+			R.add_reagent(/datum/reagent/toxin/bromide, 5)
+			new /obj/effect/temporary(get_turf(target),3, 'icons/effects/effects.dmi', "fire_goon")
+			charge--
+	else
+		user.adjustFireLoss(5)
+		if(prob(5))
+			to_chat(user, "<span class='warning'>\The [src] appears to be out of power!</span>")
+		new /obj/effect/temporary(get_turf(user),3, 'icons/effects/effects.dmi', "fire_goon")
 
 /obj/item/weapon/gun/energy/staff/beacon
 	name = "holy beacon"
-	desc = "Look closely into its crystal; there’s a miniature sun. Or maybe that’s just some fancy LEDs. Either way, it looks thoroughly mystical."
+	desc = "Look closely into its crystal; there's a miniature sun. Or maybe that's just some fancy LEDs. Either way, it looks thoroughly mystical."
 	icon = 'icons/obj/wizard.dmi'
 	icon_state = "starstaff"
 	self_recharge = 0

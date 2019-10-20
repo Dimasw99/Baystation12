@@ -2,7 +2,7 @@
 	display_name = "SolGov beret selection"
 	description = "A beret denoting service in an organization within SolGov."
 	path = /obj/item/clothing/head/beret/solgov
-	allowed_branches = UNIFORMED_BRANCHES
+	allowed_branches = SOLGOV_BRANCHES
 
 /datum/gear/head/solberet/New()
 	..()
@@ -25,7 +25,7 @@
 /datum/gear/head/solhat
 	display_name = "sol central government hat"
 	path = /obj/item/clothing/head/soft/solgov
-	allowed_branches = UNIFORMED_BRANCHES
+	allowed_branches = SOLGOV_BRANCHES
 
 /datum/gear/head/fleethat
 	display_name = "fleet cap"
@@ -42,9 +42,6 @@
 /datum/gear/head/surgical
 	allowed_roles = STERILE_ROLES
 
-/datum/gear/head/whitentberet
-	allowed_roles = list(/datum/job/guard)
-
 /datum/gear/head/beret
 	allowed_branches = CIVILIAN_BRANCHES
 
@@ -52,6 +49,9 @@
 	allowed_branches = CIVILIAN_BRANCHES
 
 /datum/gear/head/bandana
+	allowed_branches = CIVILIAN_BRANCHES
+
+/datum/gear/head/beanie
 	allowed_branches = CIVILIAN_BRANCHES
 
 /datum/gear/head/bow
@@ -68,9 +68,42 @@
 
 /datum/gear/head/formalhat
 	allowed_roles = FORMAL_ROLES
+	allowed_branches = CIVILIAN_BRANCHES
 
 /datum/gear/head/informalhat
 	allowed_roles = SEMIFORMAL_ROLES
 
 /datum/gear/head/welding
 	allowed_roles = TECHNICAL_ROLES
+
+/datum/gear/tactical/balaclava
+	allowed_roles = ARMORED_ROLES
+
+/datum/gear/head/fleetberet
+	display_name = "Fleet branch beret selection"
+	description = "A beret denoting service in one of the fleets within the SCG Fleet."
+	path = /obj/item/clothing/head/beret/solgov/fleet/branch
+	allowed_branches = list(/datum/mil_branch/fleet)
+
+/datum/gear/head/fleetberet/New()
+	..()
+	var/berets = list()
+	berets["first fleet beret"] = /obj/item/clothing/head/beret/solgov/fleet/branch
+	berets["second fleet beret"] = /obj/item/clothing/head/beret/solgov/fleet/branch/second
+	berets["third fleet beret"] = /obj/item/clothing/head/beret/solgov/fleet/branch/third
+	berets["fourth fleet beret"] = /obj/item/clothing/head/beret/solgov/fleet/branch/fourth
+	berets["fifth fleet beret"] = /obj/item/clothing/head/beret/solgov/fleet/branch/fifth
+	gear_tweaks += new/datum/gear_tweak/path(berets)
+
+/datum/gear/head/ECberet
+	display_name = "EC sections beret selection"
+	description = "A beret denoting service in one of the branches within the SCG EC."
+	path = /obj/item/clothing/head/beret/solgov/expedition/branch
+	allowed_branches = list(/datum/mil_branch/expeditionary_corps)
+
+/datum/gear/head/ECberet/New()
+	..()
+	var/berets = list()
+	berets["field operation beret"] = /obj/item/clothing/head/beret/solgov/expedition/branch
+	berets["observatory beret"] = /obj/item/clothing/head/beret/solgov/expedition/branch/observatory
+	gear_tweaks += new/datum/gear_tweak/path(berets)

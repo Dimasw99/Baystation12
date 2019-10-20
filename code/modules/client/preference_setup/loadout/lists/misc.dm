@@ -2,6 +2,16 @@
 	display_name = "cane"
 	path = /obj/item/weapon/cane
 
+/datum/gear/union_card
+	display_name = "union membership"
+	path = /obj/item/weapon/card/union
+
+/datum/gear/union_card/spawn_on_mob(var/mob/living/carbon/human/H, var/metadata)
+	. = ..()
+	if(.)
+		var/obj/item/weapon/card/union/card = .
+		card.signed_by = H.real_name
+
 /datum/gear/dice
 	display_name = "dice pack"
 	path = /obj/item/weapon/storage/pill_bottle/dice
@@ -48,12 +58,22 @@
 
 /datum/gear/coffeecup
 	display_name = "coffee cup"
-	path = /obj/item/weapon/reagent_containers/food/drinks/coffeecup
+	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/coffeecup
 	flags = GEAR_HAS_TYPE_SELECTION
 
-/datum/gear/boot_knife
-	display_name = "boot knife"
-	path = /obj/item/weapon/material/kitchen/utensil/knife/boot
+/datum/gear/knife
+	display_name = "folding knife"
+	path = /obj/item/weapon/material/knife/folding
+	cost = 3
+
+/datum/gear/knife_wood
+	display_name = "peasant knife"
+	path = /obj/item/weapon/material/knife/folding/wood
+	cost = 3
+
+/datum/gear/knife_tacticool
+	display_name = "tactical folding knife"
+	path = /obj/item/weapon/material/knife/folding/tacticool
 	cost = 3
 
 /datum/gear/lunchbox
@@ -134,9 +154,31 @@
 	display_name = "cheap lighter"
 	path = /obj/item/weapon/flame/lighter
 
+/datum/gear/lighter/New()
+	..()
+	var/colours = list()
+	colours["random"] = /obj/item/weapon/flame/lighter/random
+	colours["red"] = /obj/item/weapon/flame/lighter/red
+	colours["yellow"] = /obj/item/weapon/flame/lighter/yellow
+	colours["cyan"] = /obj/item/weapon/flame/lighter/cyan
+	colours["green"] = /obj/item/weapon/flame/lighter/green
+	colours["pink"] = /obj/item/weapon/flame/lighter/pink
+	gear_tweaks += new/datum/gear_tweak/path(colours)
+
 /datum/gear/zippo
 	display_name = "zippo"
 	path = /obj/item/weapon/flame/lighter/zippo
+
+/datum/gear/zippo/New()
+	..()
+	var/colours = list()
+	colours["random"] = /obj/item/weapon/flame/lighter/zippo/random
+	colours["silver"] = /obj/item/weapon/flame/lighter/zippo
+	colours["blackened"] = /obj/item/weapon/flame/lighter/zippo/black
+	colours["gunmetal"] = /obj/item/weapon/flame/lighter/zippo/gunmetal
+	colours["bronze"] = /obj/item/weapon/flame/lighter/zippo/bronze
+	colours["pink"] = /obj/item/weapon/flame/lighter/zippo/pink
+	gear_tweaks += new/datum/gear_tweak/path(colours)
 
 /datum/gear/ashtray
 	display_name = "ashtray, plastic"
@@ -166,3 +208,39 @@
 	display_name = "electronic cigarette, deluxe"
 	path = /obj/item/clothing/mask/smokable/ecig/deluxe
 	cost = 2
+
+/datum/gear/bible
+	display_name = "holy book"
+	path = /obj/item/weapon/storage/bible
+	cost = 2
+
+/datum/gear/bible/New()
+	..()
+	var/books = list()
+	books["bible (adjustable)"] = /obj/item/weapon/storage/bible
+	books["Bible"] = /obj/item/weapon/storage/bible/bible
+	books["Tanakh"] = /obj/item/weapon/storage/bible/tanakh
+	books["Quran"] = /obj/item/weapon/storage/bible/quran
+	books["Kitab-i-Aqdas"] = /obj/item/weapon/storage/bible/aqdas
+	books["Kojiki"] = /obj/item/weapon/storage/bible/kojiki
+	gear_tweaks += new/datum/gear_tweak/path(books)
+
+/datum/gear/swiss
+	display_name = "multi-tool"
+	path = /obj/item/weapon/material/knife/folding/swiss
+	cost = 4
+	flags = GEAR_HAS_COLOR_SELECTION
+
+
+/datum/gear/cross
+	display_name = "cross"
+	path = /obj/item/weapon/material/cross
+	cost = 2
+
+/datum/gear/cross/New()
+	..()
+	var/crosstype = list()
+	crosstype["cross, wood"] = /obj/item/weapon/material/cross/wood
+	crosstype["cross, silver"] = /obj/item/weapon/material/cross/silver
+	crosstype["cross, gold"] = /obj/item/weapon/material/cross/gold
+	gear_tweaks += new/datum/gear_tweak/path(crosstype)

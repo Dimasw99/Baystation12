@@ -28,14 +28,14 @@
 		"rail thin",
 		"thin",
 		"of average build",
-		"broad-shouldered",
+		"well-built",
 		"heavily built"
 		)
 	comparative_value_descriptors_smaller = list(
 		"a bit smaller in build than you",
 		"smaller in build than you",
 		"much smaller in build than you",
-		"dwarfed by your height"
+		"dwarfed by your bulk"
 		)
 	comparative_value_descriptors_larger = list(
 		"slightly larger than you in build",

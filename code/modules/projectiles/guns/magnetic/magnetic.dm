@@ -1,13 +1,14 @@
 /obj/item/weapon/gun/magnetic
 	name = "improvised coilgun"
 	desc = "A coilgun hastily thrown together out of a basic frame and advanced power storage components. Is it safe for it to be duct-taped together like that?"
+	icon = 'icons/obj/guns/coilgun.dmi'
 	icon_state = "coilgun"
 	item_state = "coilgun"
-	icon = 'icons/obj/railgun.dmi'
 	one_hand_penalty = 5
 	fire_delay = 20
-	origin_tech = list(TECH_COMBAT = 5, TECH_MATERIAL = 4, TECH_ILLEGAL = 2, TECH_MAGNET = 4)
+	origin_tech = list(TECH_COMBAT = 5, TECH_MATERIAL = 4, TECH_ESOTERIC = 2, TECH_MAGNET = 4)
 	w_class = ITEM_SIZE_LARGE
+	bulk = GUN_BULK_RIFLE
 	combustion = 1
 
 	var/obj/item/weapon/cell/cell                              // Currently installed powercell.
@@ -16,7 +17,7 @@
 	var/gun_unreliable = 15                                    // Percentage chance of detonating in your hands.
 
 	var/obj/item/loaded                                        // Currently loaded object, for retrieval/unloading.
-	var/load_type = /obj/item/stack/rods                       // Type of stack to load with.
+	var/load_type = /obj/item/stack/material/rods                       // Type of stack to load with.
 	var/load_sheet_max = 1									   // Maximum number of "sheets" you can load from a stack.
 	var/projectile_type = /obj/item/projectile/bullet/magnetic // Actual fire type, since this isn't throw_at rod launcher.
 
@@ -46,10 +47,12 @@
 			if(capacitor.charge < capacitor.max_charge && cell.checked_use(power_per_tick))
 				capacitor.charge(power_per_tick)
 		else
-			capacitor.use(capacitor.charge * 0.05)
+			if(capacitor)
+				capacitor.use(capacitor.charge * 0.05)
 	update_icon()
 
-/obj/item/weapon/gun/magnetic/update_icon()
+/obj/item/weapon/gun/magnetic/on_update_icon()
+	. = ..()
 	var/list/overlays_to_add = list()
 	if(removable_components)
 		if(cell)
@@ -64,32 +67,30 @@
 		overlays_to_add += image(icon, "[icon_state]_green")
 	if(loaded)
 		overlays_to_add += image(icon, "[icon_state]_loaded")
+		var/obj/item/weapon/magnetic_ammo/mag = loaded
+		if(istype(mag))
+			if(mag.remaining)
+				overlays_to_add += image(icon, "[icon_state]_ammo")
 
-	overlays = overlays_to_add
-	..()
+	overlays += overlays_to_add
 
 /obj/item/weapon/gun/magnetic/proc/show_ammo(var/mob/user)
 	if(loaded)
 		to_chat(user, "<span class='notice'>It has \a [loaded] loaded.</span>")
 
 /obj/item/weapon/gun/magnetic/examine(var/mob/user)
-	. = ..(user, 2)
-	if(.)
-		show_ammo(user)
-
-		if(cell)
-			to_chat(user, "<span class='notice'>The installed [cell.name] has a charge level of [round((cell.charge/cell.maxcharge)*100)]%.</span>")
-		if(capacitor)
-			to_chat(user, "<span class='notice'>The installed [capacitor.name] has a charge level of [round((capacitor.charge/capacitor.max_charge)*100)]%.</span>")
-
-		if(!cell || !capacitor)
-			to_chat(user, "<span class='notice'>The capacitor charge indicator is blinking <font color ='[COLOR_RED]'>red</font>. Maybe you should check the cell or capacitor.</span>")
+	. = ..(user)
+	if(cell)
+		to_chat(user, "<span class='notice'>The installed [cell.name] has a charge level of [round((cell.charge/cell.maxcharge)*100)]%.</span>")
+	if(capacitor)
+		to_chat(user, "<span class='notice'>The installed [capacitor.name] has a charge level of [round((capacitor.charge/capacitor.max_charge)*100)]%.</span>")
+	if(!cell || !capacitor)
+		to_chat(user, "<span class='notice'>The capacitor charge indicator is blinking <font color ='[COLOR_RED]'>red</font>. Maybe you should check the cell or capacitor.</span>")
+	else
+		if(capacitor.charge < power_cost)
+			to_chat(user, "<span class='notice'>The capacitor charge indicator is <font color ='[COLOR_ORANGE]'>amber</font>.</span>")
 		else
-			if(capacitor.charge < power_cost)
-				to_chat(user, "<span class='notice'>The capacitor charge indicator is <font color ='[COLOR_ORANGE]'>amber</font>.</span>")
-			else
-				to_chat(user, "<span class='notice'>The capacitor charge indicator is <font color ='[COLOR_GREEN]'>green</font>.</span>")
-		return TRUE
+			to_chat(user, "<span class='notice'>The capacitor charge indicator is <font color ='[COLOR_GREEN]'>green</font>.</span>")
 
 /obj/item/weapon/gun/magnetic/attackby(var/obj/item/thing, var/mob/user)
 
@@ -98,7 +99,7 @@
 			if(cell)
 				to_chat(user, "<span class='warning'>\The [src] already has \a [cell] installed.</span>")
 				return
-			if(!user.unEquip(cell, src))
+			if(!user.unEquip(thing, src))
 				return
 			cell = thing
 			playsound(loc, 'sound/machines/click.ogg', 10, 1)
@@ -110,7 +111,6 @@
 			if(!capacitor)
 				to_chat(user, "<span class='warning'>\The [src] has no capacitor installed.</span>")
 				return
-			capacitor.forceMove(get_turf(src))
 			user.put_in_hands(capacitor)
 			user.visible_message("<span class='notice'>\The [user] unscrews \the [capacitor] from \the [src].</span>")
 			playsound(loc, 'sound/items/Screwdriver.ogg', 50, 1)
@@ -122,7 +122,7 @@
 			if(capacitor)
 				to_chat(user, "<span class='warning'>\The [src] already has \a [capacitor] installed.</span>")
 				return
-			if(!user.unEquip(capacitor, src))
+			if(!user.unEquip(thing, src))
 				return
 			capacitor = thing
 			playsound(loc, 'sound/machines/click.ogg', 10, 1)
@@ -140,8 +140,15 @@
 			if(loaded)
 				to_chat(user, "<span class='warning'>\The [src] already has \a [loaded] loaded.</span>")
 				return
+			var/obj/item/weapon/magnetic_ammo/mag = thing
+			if(istype(mag))
+				if(!(load_type == mag.basetype))
+					to_chat(user, "<span class='warning'>\The [src] doesn't seem to accept \a [mag].</span>")
+					return
+				projectile_type = mag.projectile_type
 			if(!user.unEquip(thing, src))
 				return
+
 			loaded = thing
 		else if(load_sheet_max > 1)
 			var ammo_count = 0
@@ -182,7 +189,6 @@
 			cell = null
 
 		if(removing)
-			removing.forceMove(get_turf(src))
 			user.put_in_hands(removing)
 			user.visible_message("<span class='notice'>\The [user] removes \the [removing] from \the [src].</span>")
 			playsound(loc, 'sound/machines/click.ogg', 10, 1)

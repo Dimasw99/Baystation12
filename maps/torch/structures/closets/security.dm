@@ -2,14 +2,37 @@
  * Torch Security
  */
 
+/decl/closet_appearance/secure_closet/torch/security
+	extra_decals = list(
+		"stripe_vertical_mid_full" = COLOR_NT_RED,
+		"security" = COLOR_NT_RED
+	)
+
+/decl/closet_appearance/secure_closet/torch/security/forensics
+	extra_decals = list(
+		"stripe_vertical_mid_full" = COLOR_NT_RED,
+		"forensics" = COLOR_NT_RED
+	)
+
+/decl/closet_appearance/secure_closet/torch/security/warden
+	extra_decals = list(
+		"stripe_vertical_left_full" = COLOR_NT_RED,
+		"stripe_vertical_right_full" = COLOR_NT_RED,
+		"security" = COLOR_NT_RED
+	)
+
+/decl/closet_appearance/secure_closet/torch/security/hos
+	extra_decals = list(
+		"stripe_vertical_left_full" = COLOR_NT_RED,
+		"stripe_vertical_mid_full" = COLOR_CLOSET_GOLD,
+		"stripe_vertical_right_full" = COLOR_NT_RED,
+		"security" = COLOR_CLOSET_GOLD
+	)
+
 /obj/structure/closet/secure_closet/security_torch
 	name = "master at arms' locker"
 	req_access = list(access_brig)
-	icon_state = "sec1"
-	icon_closed = "sec"
-	icon_locked = "sec1"
-	icon_opened = "secopen"
-	icon_off = "secoff"
+	closet_appearance = /decl/closet_appearance/secure_closet/torch/security
 
 /obj/structure/closet/secure_closet/security_torch/WillContain()
 	return list(
@@ -29,9 +52,12 @@
 		/obj/item/weapon/gun/energy/gun/small/secure,
 		/obj/item/device/megaphone,
 		/obj/item/clothing/gloves/thick,
+		/obj/item/clothing/gloves/thick/duty/solgov/sec,
 		/obj/item/device/holowarrant,
 		/obj/item/device/flashlight/maglight,
-		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack/security, /obj/item/weapon/storage/backpack/satchel_sec)),
+		/obj/item/weapon/storage/belt/security,
+		/obj/item/weapon/material/knife/folding/swiss/sec,
+		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack/security, /obj/item/weapon/storage/backpack/satchel/sec)),
 		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack/dufflebag/sec, /obj/item/weapon/storage/backpack/messenger/sec))
 	)
 
@@ -39,17 +65,12 @@
 /obj/structure/closet/secure_closet/cos
 	name = "chief of security's locker"
 	req_access = list(access_hos)
-	icon_state = "hossecure1"
-	icon_closed = "hossecure"
-	icon_locked = "hossecure1"
-	icon_opened = "hossecureopen"
-	icon_off = "hossecureoff"
+	closet_appearance = /decl/closet_appearance/secure_closet/torch/security/hos
 
 /obj/structure/closet/secure_closet/cos/WillContain()
 	return list(
 		/obj/item/clothing/suit/armor/pcarrier/medium/command/security,
 		/obj/item/clothing/head/helmet/solgov/command,
-		/obj/item/clothing/head/HoS/dermal,
 		/obj/item/device/radio/headset/heads/cos,
 		/obj/item/device/radio/headset/heads/cos/alt,
 		/obj/item/clothing/glasses/sunglasses/sechud/goggles,
@@ -65,27 +86,25 @@
 		/obj/item/weapon/reagent_containers/spray/pepper,
 		/obj/item/clothing/accessory/storage/black_vest,
 		/obj/item/device/hailer,
-		/obj/item/weapon/clipboard,
+		/obj/item/weapon/material/clipboard,
 		/obj/item/weapon/folder/red,
 		/obj/item/device/holowarrant,
 		/obj/item/clothing/gloves/thick,
+		/obj/item/clothing/gloves/thick/duty/solgov/sec,
 		/obj/item/device/flashlight/maglight,
 		/obj/item/device/taperecorder,
 		/obj/item/weapon/hand_labeler,
-		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack/security, /obj/item/weapon/storage/backpack/satchel_sec)),
+		/obj/item/weapon/material/knife/folding/swiss/officer,
+		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack/security, /obj/item/weapon/storage/backpack/satchel/sec)),
 		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack/dufflebag/sec, /obj/item/weapon/storage/backpack/messenger/sec))
 	)
 
-/obj/structure/closet/secure_closet/brigofficer
-	name = "brig officer's locker"
+/obj/structure/closet/secure_closet/brigchief
+	name = "brig chief's locker"
 	req_access = list(access_armory)
-	icon_state = "wardensecure1"
-	icon_closed = "wardensecure"
-	icon_locked = "wardensecure1"
-	icon_opened = "wardensecureopen"
-	icon_off = "wardensecureoff"
+	closet_appearance = /decl/closet_appearance/secure_closet/torch/security/warden
 
-/obj/structure/closet/secure_closet/brigofficer/WillContain()
+/obj/structure/closet/secure_closet/brigchief/WillContain()
 	return list(
 		/obj/item/clothing/suit/armor/pcarrier/medium/security,
 		/obj/item/clothing/head/helmet/solgov/security,
@@ -105,19 +124,17 @@
 		/obj/item/weapon/hand_labeler,
 		/obj/item/device/holowarrant,
 		/obj/item/clothing/gloves/thick,
+		/obj/item/clothing/gloves/thick/duty/solgov/sec,
 		/obj/item/device/flashlight/maglight,
-		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack/security, /obj/item/weapon/storage/backpack/satchel_sec)),
+		/obj/item/weapon/material/knife/folding/swiss/sec,
+		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack/security, /obj/item/weapon/storage/backpack/satchel/sec)),
 		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack/dufflebag/sec, /obj/item/weapon/storage/backpack/messenger/sec))
 	)
 
 /obj/structure/closet/secure_closet/forensics
 	name = "forensics technician's locker"
 	req_access = list(access_forensics_lockers)
-	icon_state = "sec1"
-	icon_closed = "sec"
-	icon_locked = "sec1"
-	icon_opened = "secopen"
-	icon_off = "secoff"
+	closet_appearance = /decl/closet_appearance/secure_closet/torch/security/forensics
 
 /obj/structure/closet/secure_closet/forensics/WillContain()
 	return list(
@@ -137,6 +154,9 @@
 		/obj/item/device/flashlight/maglight,
 		/obj/item/weapon/storage/belt/holster/forensic,
 		/obj/item/weapon/storage/belt/holster/security,
-		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack/security, /obj/item/weapon/storage/backpack/satchel_sec)),
+		/obj/item/clothing/gloves/thick,
+		/obj/item/clothing/gloves/thick/duty/solgov/sec,
+		/obj/item/weapon/material/knife/folding/swiss/sec,
+		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack/security, /obj/item/weapon/storage/backpack/satchel/sec)),
 		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack/dufflebag/sec, /obj/item/weapon/storage/backpack/messenger/sec))
 	)

@@ -3,191 +3,68 @@
 	category = /datum/shuttle/autodock/ferry/escape_pod/torchpod
 	sound_takeoff = 'sound/effects/rocket.ogg'
 	sound_landing = 'sound/effects/rocket_backwards.ogg'
-	var/number
-
-/datum/shuttle/autodock/ferry/escape_pod/torchpod/New()
-	name = "Escape Pod [number]"
-	dock_target = "escape_pod_[number]"
-	arming_controller = "escape_pod_[number]_berth"
-	waypoint_station = "escape_pod_[number]_start"
-	landmark_transition = "escape_pod_[number]_internim"
-	waypoint_offsite = "escape_pod_[number]_out"
-	..()
-
-/obj/effect/shuttle_landmark/escape_pod/
-	var/number
+	warmup_time = 10
 
 /obj/effect/shuttle_landmark/escape_pod/start
 	name = "Docked"
-
-/obj/effect/shuttle_landmark/escape_pod/start/New()
-	landmark_tag = "escape_pod_[number]_start"
-	docking_controller = "escape_pod_[number]_berth"
-	..()
+	base_turf = /turf/simulated/floor/reinforced/airless
 
 /obj/effect/shuttle_landmark/escape_pod/transit
 	name = "In transit"
 
-/obj/effect/shuttle_landmark/escape_pod/transit/New()
-	landmark_tag = "escape_pod_[number]_internim"
-	..()
-
 /obj/effect/shuttle_landmark/escape_pod/out
 	name = "Escaped"
 
-/obj/effect/shuttle_landmark/escape_pod/out/New()
-	landmark_tag = "escape_pod_[number]_out"
-	..()
-
 //Pods
+#define TORCH_ESCAPE_POD(NUMBER) \
+/datum/shuttle/autodock/ferry/escape_pod/torchpod/escape_pod##NUMBER { \
+	shuttle_area = /area/shuttle/escape_pod##NUMBER/station; \
+	name = "Escape Pod " + #NUMBER; \
+	dock_target = "escape_pod_" + #NUMBER; \
+	arming_controller = "escape_pod_"+ #NUMBER +"_berth"; \
+	waypoint_station = "escape_pod_"+ #NUMBER +"_start"; \
+	landmark_transition = "escape_pod_"+ #NUMBER +"_internim"; \
+	waypoint_offsite = "escape_pod_"+ #NUMBER +"_out"; \
+} \
+/obj/effect/shuttle_landmark/escape_pod/start/pod##NUMBER { \
+	landmark_tag = "escape_pod_"+ #NUMBER +"_start"; \
+	docking_controller = "escape_pod_"+ #NUMBER +"_berth"; \
+} \
+/obj/effect/shuttle_landmark/escape_pod/out/pod##NUMBER { \
+	landmark_tag = "escape_pod_"+ #NUMBER +"_internim"; \
+} \
+/obj/effect/shuttle_landmark/escape_pod/transit/pod##NUMBER { \
+	landmark_tag = "escape_pod_"+ #NUMBER +"_out"; \
+}
 
-/datum/shuttle/autodock/ferry/escape_pod/torchpod/escape_pod6
-	warmup_time = 10
-	shuttle_area = /area/shuttle/escape_pod6/station
-	number = 6
-/obj/effect/shuttle_landmark/escape_pod/start/pod6
-	number = 6
-/obj/effect/shuttle_landmark/escape_pod/out/pod6
-	number = 6
-/obj/effect/shuttle_landmark/escape_pod/transit/pod6
-	number = 6
-
-/datum/shuttle/autodock/ferry/escape_pod/torchpod/escape_pod7
-	warmup_time = 10
-	shuttle_area = /area/shuttle/escape_pod7/station
-	number = 7
-/obj/effect/shuttle_landmark/escape_pod/start/pod7
-	number = 7
-/obj/effect/shuttle_landmark/escape_pod/out/pod7
-	number = 7
-/obj/effect/shuttle_landmark/escape_pod/transit/pod7
-	number = 7
-
-/datum/shuttle/autodock/ferry/escape_pod/torchpod/escape_pod8
-	warmup_time = 10
-	shuttle_area = /area/shuttle/escape_pod8/station
-	number = 8
-/obj/effect/shuttle_landmark/escape_pod/start/pod8
-	number = 8
-/obj/effect/shuttle_landmark/escape_pod/out/pod8
-	number = 8
-/obj/effect/shuttle_landmark/escape_pod/transit/pod8
-	number = 8
-
-/datum/shuttle/autodock/ferry/escape_pod/torchpod/escape_pod9
-	warmup_time = 10
-	shuttle_area = /area/shuttle/escape_pod9/station
-	number = 9
-/obj/effect/shuttle_landmark/escape_pod/start/pod9
-	number = 9
-/obj/effect/shuttle_landmark/escape_pod/out/pod9
-	number = 9
-/obj/effect/shuttle_landmark/escape_pod/transit/pod9
-	number = 9
-
-/datum/shuttle/autodock/ferry/escape_pod/torchpod/escape_pod10
-	warmup_time = 10
-	shuttle_area = /area/shuttle/escape_pod10/station
-	number = 10
-/obj/effect/shuttle_landmark/escape_pod/start/pod10
-	base_turf = /turf/simulated/floor/reinforced/airless
-	number = 10
-/obj/effect/shuttle_landmark/escape_pod/out/pod10
-	number = 10
-/obj/effect/shuttle_landmark/escape_pod/transit/pod10
-	number = 10
-
-/datum/shuttle/autodock/ferry/escape_pod/torchpod/escape_pod11
-	warmup_time = 10
-	shuttle_area = /area/shuttle/escape_pod11/station
-	number = 11
-/obj/effect/shuttle_landmark/escape_pod/start/pod11
-	base_turf = /turf/simulated/floor/reinforced/airless
-	number = 11
-/obj/effect/shuttle_landmark/escape_pod/out/pod11
-	number = 11
-/obj/effect/shuttle_landmark/escape_pod/transit/pod11
-	number = 11
-
-//Smoll pods
-
-/datum/shuttle/autodock/ferry/escape_pod/torchpod/escape_pod12
-	shuttle_area = /area/shuttle/escape_pod12/station
-	number = 12
-/obj/effect/shuttle_landmark/escape_pod/start/pod12
-	base_turf = /turf/simulated/floor/reinforced/airless
-	number = 12
-/obj/effect/shuttle_landmark/escape_pod/out/pod12
-	number = 12
-/obj/effect/shuttle_landmark/escape_pod/transit/pod12
-	number = 12
-
-/datum/shuttle/autodock/ferry/escape_pod/torchpod/escape_pod13
-	shuttle_area = /area/shuttle/escape_pod13/station
-	number = 13
-/obj/effect/shuttle_landmark/escape_pod/start/pod13
-	base_turf = /turf/simulated/floor/reinforced/airless
-	number = 13
-/obj/effect/shuttle_landmark/escape_pod/out/pod13
-	number = 13
-/obj/effect/shuttle_landmark/escape_pod/transit/pod13
-	number = 13
-
-/datum/shuttle/autodock/ferry/escape_pod/torchpod/escape_pod14
-	shuttle_area = /area/shuttle/escape_pod14/station
-	number = 14
-/obj/effect/shuttle_landmark/escape_pod/start/pod14
-	base_turf = /turf/simulated/floor/reinforced/airless
-	number = 14
-/obj/effect/shuttle_landmark/escape_pod/out/pod14
-	number = 14
-/obj/effect/shuttle_landmark/escape_pod/transit/pod14
-	number = 14
-
-/datum/shuttle/autodock/ferry/escape_pod/torchpod/escape_pod15
-	shuttle_area = /area/shuttle/escape_pod15/station
-	number = 15
-/obj/effect/shuttle_landmark/escape_pod/start/pod15
-	base_turf = /turf/simulated/floor/reinforced/airless
-	number = 15
-/obj/effect/shuttle_landmark/escape_pod/out/pod15
-	number = 15
-/obj/effect/shuttle_landmark/escape_pod/transit/pod15
-	number = 15
-
-/datum/shuttle/autodock/ferry/escape_pod/torchpod/escape_pod116
-	shuttle_area = /area/shuttle/escape_pod16/station
-	number = 16
-/obj/effect/shuttle_landmark/escape_pod/start/pod16
-	base_turf = /turf/simulated/floor/reinforced/airless
-	number = 16
-/obj/effect/shuttle_landmark/escape_pod/out/pod16
-	number = 16
-/obj/effect/shuttle_landmark/escape_pod/transit/pod16
-	number = 16
-
-/datum/shuttle/autodock/ferry/escape_pod/torchpod/escape_pod17
-	shuttle_area = /area/shuttle/escape_pod17/station
-	number = 17
-/obj/effect/shuttle_landmark/escape_pod/start/pod17
-	base_turf = /turf/simulated/floor/reinforced/airless
-	number = 17
-/obj/effect/shuttle_landmark/escape_pod/out/pod17
-	number = 17
-/obj/effect/shuttle_landmark/escape_pod/transit/pod17
-	number = 17
+TORCH_ESCAPE_POD(6)
+TORCH_ESCAPE_POD(7)
+TORCH_ESCAPE_POD(8)
+TORCH_ESCAPE_POD(9)
+TORCH_ESCAPE_POD(10)
+TORCH_ESCAPE_POD(11)
+TORCH_ESCAPE_POD(12)
+TORCH_ESCAPE_POD(13)
+TORCH_ESCAPE_POD(14)
+TORCH_ESCAPE_POD(15)
+TORCH_ESCAPE_POD(16)
+TORCH_ESCAPE_POD(17)
 
 //Petrov
 
 /datum/shuttle/autodock/ferry/petrov
 	name = "Petrov"
 	warmup_time = 10
-	shuttle_area = list(/area/shuttle/petrov/ship,/area/shuttle/petrov/cell1,/area/shuttle/petrov/cell2,/area/shuttle/petrov/cell3)
 	dock_target = "petrov_shuttle_airlock"
 	waypoint_station = "nav_petrov_start"
 	waypoint_offsite = "nav_petrov_out"
 	logging_home_tag = "nav_petrov_start"
 	logging_access = access_petrov_helm
+	ceiling_type = /turf/simulated/floor/shuttle_ceiling
+
+/datum/shuttle/autodock/ferry/petrov/New(_name, var/obj/effect/shuttle_landmark/initial_location)
+	shuttle_area = subtypesof(/area/shuttle/petrov)
+	..()
 
 /obj/effect/shuttle_landmark/petrov/start
 	name = "First Deck"
@@ -208,6 +85,7 @@
 		"nav_ninja_deck3",
 		"nav_ninja_deck4",
 		"nav_ninja_deck5",
+		"nav_ninja_hanger",
 		"nav_away_6",
 		"nav_derelict_5",
 		"nav_cluster_6",
@@ -235,6 +113,10 @@
 /obj/effect/shuttle_landmark/ninja/internim
 	name = "In transit"
 	landmark_tag = "nav_ninja_transition"
+
+/obj/effect/shuttle_landmark/ninja/hanger
+	name = "West of Hanger Deck"
+	landmark_tag = "nav_ninja_hanger"
 
 /obj/effect/shuttle_landmark/ninja/deck1
 	name = "South of First Deck"
@@ -330,6 +212,7 @@
 		"nav_merc_deck3",
 		"nav_merc_deck4",
 		"nav_merc_deck5",
+		"nav_merc_hanger",
 		"nav_away_5",
 		"nav_derelict_6",
 		"nav_cluster_5",
@@ -366,6 +249,10 @@
 	landmark_tag = "nav_merc_dock"
 	docking_controller = "nuke_shuttle_dock_airlock"
 
+/obj/effect/shuttle_landmark/merc/hanger
+	name = "Northeast of Hanger Deck"
+	landmark_tag = "nav_merc_hanger"
+
 /obj/effect/shuttle_landmark/merc/deck1
 	name = "Northeast of First Deck"
 	landmark_tag = "nav_merc_deck1"
@@ -397,6 +284,7 @@
 		"nav_skipjack_deck3",
 		"nav_skipjack_deck4",
 		"nav_skipjack_deck5",
+		"nav_skipjack_hanger",
 		"nav_away_7",
 		"nav_derelict_7",
 		"nav_cluster_7",
@@ -433,6 +321,10 @@
 	landmark_tag = "nav_skipjack_dock"
 	docking_controller = "skipjack_shuttle_dock_airlock"
 
+/obj/effect/shuttle_landmark/skipjack/hanger
+	name = "North of Hanger Deck"
+	landmark_tag = "nav_skipjack_hanger"
+
 /obj/effect/shuttle_landmark/skipjack/deck1
 	name = "Northwest of First Deck"
 	landmark_tag = "nav_skipjack_deck1"
@@ -464,6 +356,7 @@
 		"nav_ert_deck3",
 		"nav_ert_deck4",
 		"nav_ert_deck5",
+		"nav_ert_hanger",
 		"nav_away_4",
 		"nav_derelict_4",
 		"nav_cluster_4",
@@ -499,6 +392,10 @@
 	name = "Docking Port"
 	landmark_tag = "nav_ert_dock"
 	docking_controller = "rescue_shuttle_dock_airlock"
+
+/obj/effect/shuttle_landmark/ert/hanger
+	name =  "Southeast of Hanger deck"
+	landmark_tag = "nav_ert_hanger"
 
 /obj/effect/shuttle_landmark/ert/deck1
 	name =  "Southwest of Fourth deck"
@@ -571,6 +468,7 @@
 	fuel_consumption = 4
 	logging_home_tag = "nav_hangar_calypso"
 	logging_access = access_expedition_shuttle_helm
+	ceiling_type = /turf/simulated/floor/shuttle_ceiling/torch
 
 /obj/effect/shuttle_landmark/torch/hangar/exploration_shuttle
 	name = "Charon Hangar"
@@ -579,26 +477,26 @@
 	base_turf = /turf/simulated/floor/plating
 
 /obj/effect/shuttle_landmark/torch/deck1/exploration_shuttle
-	name = "Space near Deck Four"
+	name = "Space near Forth Deck"
 	landmark_tag = "nav_deck1_calypso"
 
 /obj/effect/shuttle_landmark/torch/deck2/exploration_shuttle
-	name = "Space near Deck Three"
+	name = "Space near Third Deck"
 	landmark_tag = "nav_deck2_calypso"
 
 /obj/effect/shuttle_landmark/torch/deck3/exploration_shuttle
-	name = "Space near Deck Two"
+	name = "Space near Second Deck"
 	landmark_tag = "nav_deck3_calypso"
 
 /obj/effect/shuttle_landmark/torch/deck4/exploration_shuttle
-	name = "Space near Deck One"
+	name = "Space near First Deck"
 	landmark_tag = "nav_deck4_calypso"
 
 /obj/effect/shuttle_landmark/torch/deck5/exploration_shuttle
 	name = "Space near Bridge"
 	landmark_tag = "nav_bridge_calypso"
 
-/obj/effect/shuttle_landmark/torch/transit/exploration_shuttle
+/obj/effect/shuttle_landmark/transit/torch/exploration_shuttle
 	name = "In transit"
 	landmark_tag = "nav_transit_calypso"
 
@@ -616,6 +514,7 @@
 	logging_home_tag = "nav_hangar_guppy"
 	logging_access = access_guppy_helm
 	skill_needed = SKILL_NONE
+	ceiling_type = /turf/simulated/floor/shuttle_ceiling/torch
 
 /obj/effect/shuttle_landmark/torch/hangar/guppy
 	name = "Guppy Hangar"
@@ -624,26 +523,26 @@
 	base_turf = /turf/simulated/floor/plating
 
 /obj/effect/shuttle_landmark/torch/deck1/guppy
-	name = "Space near Deck Four"
+	name = "Space near Forth Deck"
 	landmark_tag = "nav_deck1_guppy"
 
 /obj/effect/shuttle_landmark/torch/deck2/guppy
-	name = "Space near Deck Three"
+	name = "Space near Third Deck"
 	landmark_tag = "nav_deck2_guppy"
 
 /obj/effect/shuttle_landmark/torch/deck3/guppy
-	name = "Space near Deck Two"
+	name = "Space near Second Deck"
 	landmark_tag = "nav_deck3_guppy"
 
 /obj/effect/shuttle_landmark/torch/deck4/guppy
-	name = "Space near Deck One"
+	name = "Space near First Deck"
 	landmark_tag = "nav_deck4_guppy"
 
 /obj/effect/shuttle_landmark/torch/deck5/guppy
 	name = "Space near Bridge"
 	landmark_tag = "nav_bridge_guppy"
 
-/obj/effect/shuttle_landmark/torch/transit/guppy
+/obj/effect/shuttle_landmark/transit/torch/guppy
 	name = "In transit"
 	landmark_tag = "nav_transit_guppy"
 
@@ -657,6 +556,7 @@
 	range = 2
 	logging_home_tag = "nav_hangar_aquila"
 	logging_access = access_aquila_helm
+	ceiling_type = /turf/simulated/floor/shuttle_ceiling/torch
 
 /obj/effect/shuttle_landmark/torch/hangar/aquila
 	name = "Aquila Hangar"
@@ -665,26 +565,26 @@
 	base_turf = /turf/simulated/floor/reinforced/airless
 
 /obj/effect/shuttle_landmark/torch/deck1/aquila
-	name = "Space near Deck Four"
+	name = "Space near Forth Deck"
 	landmark_tag = "nav_deck1_aquila"
 
 /obj/effect/shuttle_landmark/torch/deck2/aquila
-	name = "Space near Deck Three"
+	name = "Space near Third Deck"
 	landmark_tag = "nav_deck2_aquila"
 
 /obj/effect/shuttle_landmark/torch/deck3/aquila
-	name = "Space near Deck Two"
+	name = "Space near Second Deck"
 	landmark_tag = "nav_deck3_aquila"
 
 /obj/effect/shuttle_landmark/torch/deck4/aquila
-	name = "Space near Deck One"
+	name = "Space near First Deck"
 	landmark_tag = "nav_deck4_aquila"
 
 /obj/effect/shuttle_landmark/torch/deck5/aquila
 	name = "Space near Bridge"
 	landmark_tag = "nav_bridge_aquila"
 
-/obj/effect/shuttle_landmark/torch/transit/aquila
+/obj/effect/shuttle_landmark/transit/torch/aquila
 	name = "In transit"
 	landmark_tag = "nav_transit_aquila"
 

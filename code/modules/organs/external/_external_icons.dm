@@ -17,7 +17,7 @@ var/list/limb_icon_cache = list()
 	s_col = null
 	s_base = ""
 	h_col = list(human.r_hair, human.g_hair, human.b_hair)
-	if(BP_IS_ROBOTIC(src))
+	if(BP_IS_ROBOTIC(src) && !(human.species.appearance_flags & HAS_BASE_SKIN_COLOURS))
 		var/datum/robolimb/franchise = all_robolimbs[model]
 		if(!(franchise && franchise.skintone))
 			return
@@ -65,7 +65,7 @@ var/list/limb_icon_cache = list()
 		icon_cache_key += "[M][markings[M]["color"]]"
 
 /obj/item/organ/external/var/icon_cache_key
-/obj/item/organ/external/update_icon(var/regenerate = 0)
+/obj/item/organ/external/on_update_icon(var/regenerate = 0)
 	var/gender = "_m"
 	if(!(limb_flags & ORGAN_FLAG_GENDERED_ICON))
 		gender = null
@@ -88,7 +88,7 @@ var/list/limb_icon_cache = list()
 		icon = 'icons/mob/human_races/species/human/body.dmi'
 	else if (status & ORGAN_MUTATED)
 		icon = species.deform
-	else if (owner && (SKELETON in owner.mutations))
+	else if (owner && (MUTATION_SKELETON in owner.mutations))
 		icon = 'icons/mob/human_races/species/human/skeleton.dmi'
 	else
 		icon = species.get_icobase(owner)
@@ -145,9 +145,10 @@ var/list/robot_hud_colours = list("#ffffff","#cccccc","#aaaaaa","#888888","#6666
 			var/g = 0.59 * species.health_hud_intensity
 			var/b = 0.11 * species.health_hud_intensity
 			temp.color = list(r, r, r, g, g, g, b, b, b)
+		temp.pixel_x = owner.default_pixel_x
+		temp.pixel_y = owner.default_pixel_y
 		hud_damage_image = image(null)
 		hud_damage_image.overlays += temp
-
 
 	// Calculate the required color index.
 	var/dam_state = min(1,((brute_dam+burn_dam)/max(1,max_damage)))
@@ -187,3 +188,16 @@ var/list/robot_hud_colours = list("#ffffff","#cccccc","#aaaaaa","#888888","#6666
 
 	return applying
 
+/obj/item/organ/external/proc/bandage_level()
+	if(damage_state_text() == "00") 
+		return 0
+	if(!is_bandaged())
+		return 0
+	if(burn_dam + brute_dam == 0)
+		. = 0
+	else if (burn_dam + brute_dam < (max_damage * 0.25 / 2))
+		. = 1
+	else if (burn_dam + brute_dam < (max_damage * 0.75 / 2))
+		. = 2
+	else
+		. = 3

@@ -3,10 +3,12 @@
 	icon_state = "intent_devour"
 	screen_loc = DIONA_SCREEN_LOC_INTENT
 
-/obj/screen/intent/diona_nymph/update_icon()
+/obj/screen/intent/diona_nymph/on_update_icon()
 	if(intent == I_HURT || intent == I_GRAB)
+		intent = I_GRAB
 		icon_state = "intent_expel"
 	else
+		intent = I_DISARM
 		icon_state = "intent_devour"
 
 /obj/screen/diona

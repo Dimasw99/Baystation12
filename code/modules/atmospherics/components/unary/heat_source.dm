@@ -8,8 +8,12 @@
 	icon_state = "heater_0"
 	density = 1
 	anchored = 1
-	use_power = 0
+	use_power = POWER_USE_OFF
 	idle_power_usage = 5			//5 Watts for thermostat related circuitry
+	base_type = /obj/machinery/atmospherics/unary/heater
+	construct_state = /decl/machine_construction/default/panel_closed
+	uncreated_component_parts = null
+	stat_immune = 0
 
 	var/max_temperature = T20C + 680
 	var/internal_volume = 600	//L
@@ -19,19 +23,6 @@
 
 	var/set_temperature = T20C	//thermostat
 	var/heating = 0		//mainly for icon updates
-
-/obj/machinery/atmospherics/unary/heater/New()
-	..()
-	initialize_directions = dir
-
-	component_parts = list()
-	component_parts += new /obj/item/weapon/circuitboard/unary_atmos/heater(src)
-	component_parts += new /obj/item/weapon/stock_parts/matter_bin(src)
-	component_parts += new /obj/item/weapon/stock_parts/capacitor(src)
-	component_parts += new /obj/item/weapon/stock_parts/capacitor(src)
-	component_parts += new /obj/item/stack/cable_coil(src, 5)
-
-	RefreshParts()
 
 /obj/machinery/atmospherics/unary/heater/atmos_init()
 	..()
@@ -56,7 +47,7 @@
 	update_icon()
 
 
-/obj/machinery/atmospherics/unary/heater/update_icon()
+/obj/machinery/atmospherics/unary/heater/on_update_icon()
 	if(node)
 		if(use_power && heating)
 			icon_state = "heater_1"
@@ -77,7 +68,7 @@
 
 	if(network && air_contents.total_moles && air_contents.temperature < set_temperature)
 		air_contents.add_thermal_energy(power_rating * HEATER_PERF_MULT)
-		use_power(power_rating)
+		use_power_oneoff(power_rating)
 
 		heating = 1
 		network.update = 1
@@ -86,11 +77,9 @@
 
 	update_icon()
 
-/obj/machinery/atmospherics/unary/heater/attack_ai(mob/user as mob)
+/obj/machinery/atmospherics/unary/heater/interface_interact(mob/user)
 	ui_interact(user)
-
-/obj/machinery/atmospherics/unary/heater/attack_hand(mob/user as mob)
-	ui_interact(user)
+	return TRUE
 
 /obj/machinery/atmospherics/unary/heater/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null, var/force_open = 1)
 	// this is the data which will be sent to the ui
@@ -125,7 +114,7 @@
 	if(..())
 		return 1
 	if(href_list["toggleStatus"])
-		use_power = !use_power
+		update_use_power(!use_power)
 		update_icon()
 	if(href_list["temp"])
 		var/amount = text2num(href_list["temp"])
@@ -142,14 +131,8 @@
 //upgrading parts
 /obj/machinery/atmospherics/unary/heater/RefreshParts()
 	..()
-	var/cap_rating = 0
-	var/bin_rating = 0
-
-	for(var/obj/item/weapon/stock_parts/P in component_parts)
-		if(istype(P, /obj/item/weapon/stock_parts/capacitor))
-			cap_rating += P.rating
-		if(istype(P, /obj/item/weapon/stock_parts/matter_bin))
-			bin_rating += P.rating
+	var/cap_rating = Clamp(total_component_rating_of_type(/obj/item/weapon/stock_parts/capacitor), 1, 20)
+	var/bin_rating = Clamp(total_component_rating_of_type(/obj/item/weapon/stock_parts/matter_bin), 0, 10)
 
 	max_power_rating = initial(max_power_rating) * cap_rating / 2
 	max_temperature = max(initial(max_temperature) - T20C, 0) * ((bin_rating * 4 + cap_rating) / 5) + T20C
@@ -159,16 +142,6 @@
 /obj/machinery/atmospherics/unary/heater/proc/set_power_level(var/new_power_setting)
 	power_setting = new_power_setting
 	power_rating = max_power_rating * (power_setting/100)
-
-/obj/machinery/atmospherics/unary/heater/attackby(var/obj/item/O as obj, var/mob/user as mob)
-	if(default_deconstruction_screwdriver(user, O))
-		return
-	if(default_deconstruction_crowbar(user, O))
-		return
-	if(default_part_replacement(user, O))
-		return
-
-	..()
 
 /obj/machinery/atmospherics/unary/heater/examine(mob/user)
 	. = ..(user)

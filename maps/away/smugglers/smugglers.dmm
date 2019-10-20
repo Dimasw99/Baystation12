@@ -31,11 +31,11 @@
 /turf/simulated/floor/asteroid,
 /area/space)
 "aj" = (
-/obj/item/ammo_casing/a50{
+/obj/item/ammo_casing/pistol/magnum{
 	pixel_x = 5;
 	pixel_y = 5
 	},
-/obj/item/ammo_casing/a50,
+/obj/item/ammo_casing/pistol/magnum,
 /obj/item/weapon/shovel{
 	pixel_x = 10;
 	pixel_y = -5
@@ -127,7 +127,7 @@
 	name = "interior access button";
 	pixel_x = 28;
 	pixel_y = 24;
-	req_one_access = list(13)
+	req_access = newlist()
 	},
 /obj/machinery/atmospherics/pipe/simple/visible/black{
 	dir = 5
@@ -275,7 +275,7 @@
 	name = "interior access button";
 	pixel_x = -28;
 	pixel_y = 24;
-	req_one_access = list(13)
+	req_access = newlist()
 	},
 /obj/machinery/atmospherics/pipe/simple/visible/black{
 	dir = 4
@@ -447,7 +447,6 @@
 "aX" = (
 /obj/structure/table/rack{
 	dir = 8;
-	layer = 2.9
 	},
 /obj/item/clothing/mask/breath,
 /turf/simulated/floor,
@@ -500,7 +499,6 @@
 "bf" = (
 /obj/structure/table/rack{
 	dir = 8;
-	layer = 2.9
 	},
 /obj/item/weapon/tank/air{
 	pixel_x = 5
@@ -549,7 +547,6 @@
 "bm" = (
 /obj/structure/table/rack{
 	dir = 8;
-	layer = 2.9
 	},
 /obj/random/voidsuit,
 /obj/random/voidhelmet,
@@ -956,7 +953,7 @@
 /turf/simulated/floor/airless/ceiling,
 /area/smugglers/dorms)
 "cq" = (
-/obj/structure/toilet{
+/obj/structure/hygiene/toilet{
 	dir = 8
 	},
 /turf/simulated/floor/airless/ceiling,
@@ -973,7 +970,7 @@
 /obj/structure/table/standard,
 /obj/effect/decal/cleanable/dirt,
 /obj/item/weapon/paper/smug_3,
-/obj/item/weapon/flame/lighter/random,
+/obj/item/weapon/flame/lighter,
 /obj/random/coin,
 /turf/simulated/floor/tiled,
 /area/smugglers/dorms)
@@ -1038,13 +1035,6 @@
 /obj/effect/shuttle_landmark/nav_asteroid_base/nav2,
 /turf/space,
 /area/space)
-"cD" = (
-/obj/effect/landmark/random_gen/asteroid{
-	generation_height = 50;
-	generation_width = 50
-	},
-/turf/space,
-/area/space)
 "cE" = (
 /obj/effect/shuttle_landmark/nav_asteroid_base/nav1,
 /turf/space,
@@ -1058,7 +1048,7 @@
 /obj/machinery/light/small{
 	dir = 4
 	},
-/obj/structure/sink{
+/obj/structure/hygiene/sink{
 	pixel_y = 15
 	},
 /obj/item/weapon/storage/mirror{
@@ -3282,7 +3272,7 @@ aa
 aa
 aa
 aa
-cD
+aa
 aa
 aa
 aa

@@ -6,7 +6,7 @@
 	w_class = ITEM_SIZE_SMALL
 	anchored = 0
 
-	matter = list(DEFAULT_WALL_MATERIAL = 700,"glass" = 300)
+	matter = list(MATERIAL_ALUMINIUM = 700, MATERIAL_GLASS = 300)
 
 	//	Motion, EMP-Proof, X-Ray
 	var/list/obj/item/possible_upgrades = list(/obj/item/device/assembly/prox_sensor, /obj/item/stack/material/osmium, /obj/item/weapon/stock_parts/scanning_module)
@@ -112,6 +112,7 @@
 					if(i != 0)
 						var/confirm = alert(user, "Is this what you want? Chances Remaining: [i]", "Confirmation", "Yes", "No")
 						if(confirm == "Yes")
+							C.update_icon()
 							break
 				return
 
@@ -141,7 +142,7 @@
 
 	..()
 
-/obj/item/weapon/camera_assembly/update_icon()
+/obj/item/weapon/camera_assembly/on_update_icon()
 	if(anchored)
 		icon_state = "camera1"
 	else
@@ -155,17 +156,15 @@
 
 	if(busy)
 		return 0
-	if(!WT.isOn())
-		return 0
 
-	to_chat(user, "<span class='notice'>You start to weld \the [src]..</span>")
-	playsound(src.loc, 'sound/items/Welder.ogg', 50, 1)
-	WT.eyecheck(user)
-	busy = 1
-	if(do_after(user, 20, src))
-		busy = 0
-		if(!WT.isOn())
-			return 0
-		return 1
+	if(WT.remove_fuel(0, user))
+		to_chat(user, "<span class='notice'>You start to weld \the [src]..</span>")
+		playsound(src.loc, 'sound/items/Welder.ogg', 50, 1)
+		busy = 1
+		if(do_after(user, 20, src) && WT.isOn())
+			playsound(src.loc, 'sound/items/Welder.ogg', 50, 1)
+			busy = 0
+			return 1
+
 	busy = 0
 	return 0

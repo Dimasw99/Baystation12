@@ -9,10 +9,6 @@
 	flags = GEAR_HAS_COLOR_SELECTION
 	description = "A simple, solid color beret. This one has no emblems or insignia on it."
 
-/datum/gear/head/whitentberet
-	display_name = "beret, NanoTrasen security"
-	path = /obj/item/clothing/head/beret/guard
-
 /datum/gear/head/bandana
 	display_name = "bandana selection"
 	path = /obj/item/clothing
@@ -20,6 +16,11 @@
 /datum/gear/head/bandana/New()
 	..()
 	gear_tweaks += new/datum/gear_tweak/path/specified_types_list(typesof(/obj/item/clothing/mask/bandana) + typesof(/obj/item/clothing/head/bandana))
+
+/datum/gear/head/beanie
+	display_name = "beanie, color select"
+	path = /obj/item/clothing/head/beanie
+	flags = GEAR_HAS_COLOR_SELECTION
 
 /datum/gear/head/bow
 	display_name = "hair bow, colour select"
@@ -101,7 +102,6 @@
 	var/informalhats = list()
 	informalhats["cowboy hat"] = /obj/item/clothing/head/cowboy_hat
 	informalhats["ushanka"] = /obj/item/clothing/head/ushanka
-	informalhats["TCC ushanka"] = /obj/item/clothing/head/ushanka/tcc
 	gear_tweaks += new/datum/gear_tweak/path(informalhats)
 
 /datum/gear/head/hijab
@@ -123,6 +123,10 @@
 	display_name = "taqiyah, colour select"
 	path = /obj/item/clothing/head/taqiyah
 	flags = GEAR_HAS_COLOR_SELECTION
+
+/datum/gear/head/rastacap
+	display_name = "rastacap"
+	path = /obj/item/clothing/head/rastacap
 
 /datum/gear/head/surgical
 	display_name = "standard surgical caps"
@@ -150,3 +154,7 @@
 /datum/gear/head/tankccap
 	display_name = "padded cap"
 	path = /obj/item/clothing/head/tank
+
+/datum/gear/tactical/balaclava
+	display_name = "balaclava"
+	path = /obj/item/clothing/mask/balaclava

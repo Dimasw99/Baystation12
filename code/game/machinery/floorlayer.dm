@@ -29,10 +29,10 @@
 
 	old_turf = new_turf
 
-/obj/machinery/floorlayer/attack_hand(mob/user as mob)
+/obj/machinery/floorlayer/physical_attack_hand(mob/user)
 	on=!on
 	user.visible_message("<span class='notice'>[user] has [!on?"de":""]activated \the [src].</span>", "<span class='notice'>You [!on?"de":""]activate \the [src].</span>")
-	return
+	return TRUE
 
 /obj/machinery/floorlayer/attackby(var/obj/item/W as obj, var/mob/user as mob)
 
@@ -57,7 +57,7 @@
 			var/obj/item/stack/tile/E = input("Choose remove tile type.", "Tiles") as null|anything in contents
 			if(E)
 				to_chat(user, "<span class='notice'>You remove the [E] from /the [src].</span>")
-				E.loc = src.loc
+				E.dropInto(loc)
 				T = null
 		return
 
@@ -104,7 +104,7 @@
 
 /obj/machinery/floorlayer/proc/TakeTile(var/obj/item/stack/tile/tile)
 	if(!T)	T = tile
-	tile.loc = src
+	tile.forceMove(src)
 
 	SortStacks()
 

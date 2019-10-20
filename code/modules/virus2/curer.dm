@@ -3,7 +3,7 @@
 	icon = 'icons/obj/computer.dmi'
 	icon_keyboard = "med_key"
 	icon_screen = "dna"
-	circuit = /obj/item/weapon/circuitboard/curefab
+	idle_power_usage = 500
 	var/curing
 	var/virusing
 
@@ -34,12 +34,11 @@
 	..()
 	return
 
-/obj/machinery/computer/curer/attack_ai(var/mob/user as mob)
-	return src.attack_hand(user)
+/obj/machinery/computer/curer/interface_interact(var/mob/user)
+	interact(user)
+	return TRUE
 
-/obj/machinery/computer/curer/attack_hand(var/mob/user as mob)
-	if(..())
-		return
+/obj/machinery/computer/curer/interact(var/mob/user)
 	user.machine = src
 	var/dat
 	if(curing)
@@ -65,11 +64,8 @@
 	return
 
 /obj/machinery/computer/curer/Process()
-	..()
-
 	if(stat & (NOPOWER|BROKEN))
 		return
-	use_power(500)
 
 	if(curing)
 		curing -= 1

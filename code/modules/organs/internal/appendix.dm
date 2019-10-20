@@ -5,7 +5,7 @@
 	organ_tag = BP_APPENDIX
 	var/inflamed = 0
 
-/obj/item/organ/internal/appendix/update_icon()
+/obj/item/organ/internal/appendix/on_update_icon()
 	..()
 	if(inflamed)
 		icon_state = "appendixinflamed"
@@ -29,11 +29,7 @@
 		if(inflamed > 400)
 			if(prob(1))
 				germ_level += rand(2,6)
-				if (owner.nutrition > 100)
-					owner.vomit()
-				else
-					to_chat(owner, "<span class='danger'>You gag as you want to throw up, but there's nothing in your stomach!</span>")
-					owner.Weaken(10)
+				owner.vomit()
 		if(inflamed > 600)
 			if(prob(1))
 				if(owner.can_feel_pain())

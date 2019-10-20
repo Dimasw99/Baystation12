@@ -1,7 +1,7 @@
 macro "borghotkeymode"
 	elem 
 		name = "Tab"
-		command = ".winset \"mainwindow.macro=borgmacro hotkey_toggle.is-checked=false input.focus=true input.background-color=#D3B5B5\""
+		command = ".winset \"mainwindow.macro=borgmacro hotkey_toggle.is-checked=false input.focus=true input.background-color=#d3b5b5\""
 	elem 
 		name = "Center+REP"
 		command = ".center"
@@ -218,11 +218,17 @@ macro "borghotkeymode"
 	elem 
 		name = "F12"
 		command = "F12"
+	elem 
+		name = ","
+		command = "move-upwards"
+	elem 
+		name = "."
+		command = "move-down"
 
 macro "macro"
 	elem 
 		name = "Tab"
-		command = ".winset \"mainwindow.macro=hotkeymode hotkey_toggle.is-checked=true mapwindow.map.focus=true\""
+		command = ".winset \"mainwindow.macro=hotkeymode hotkey_toggle.is-checked=true mapwindow.map.focus=true input.background-color=#f0f0f0\""
 	elem 
 		name = "Center+REP"
 		command = ".center"
@@ -388,11 +394,17 @@ macro "macro"
 	elem 
 		name = "F12"
 		command = "F12"
+	elem 
+		name = "CTRL+Add"
+		command = "move-upwards"
+	elem 
+		name = "CTRL+Subtract"
+		command = "move-down"
 
 macro "hotkeymode"
 	elem 
 		name = "Tab"
-		command = ".winset \"mainwindow.macro=macro hotkey_toggle.is-checked=false input.focus=true\""
+		command = ".winset \"mainwindow.macro=macro hotkey_toggle.is-checked=false input.focus=true input.background-color=#d3b5b5\""
 	elem 
 		name = "Center+REP"
 		command = ".center"
@@ -610,8 +622,6 @@ macro "hotkeymode"
 		name = "F5"
 		command = "msay"
 	elem 
-		name = "F5+REP"
-	elem 
 		name = "F6"
 		command = "Player-Panel-New"
 	elem 
@@ -629,11 +639,17 @@ macro "hotkeymode"
 	elem 
 		name = "."
 		command = "move-down"
+	elem 
+		name = "SHIFT"
+		command = "setmovingquickly"
+	elem 
+		name = "SHIFT+UP"
+		command = "setmovingslowly"
 
 macro "borgmacro"
 	elem 
 		name = "Tab"
-		command = ".winset \"mainwindow.macro=borghotkeymode hotkey_toggle.is-checked=true mapwindow.map.focus=true input.background-color=#F0F0F0\""
+		command = ".winset \"mainwindow.macro=borghotkeymode hotkey_toggle.is-checked=true mapwindow.map.focus=true input.background-color=#f0f0f0\""
 	elem 
 		name = "Center+REP"
 		command = ".center"
@@ -793,6 +809,12 @@ macro "borgmacro"
 	elem 
 		name = "F12"
 		command = "F12"
+	elem 
+		name = "CTRL+Add"
+		command = "move-upwards"
+	elem 
+		name = "CTRL+Subtract"
+		command = "move-down"
 
 
 menu "menu"
@@ -831,13 +853,8 @@ menu "menu"
 		category = "&File"
 		saved-params = "is-checked"
 	elem 
-		name = "&Icons"
-		command = ""
-		saved-params = "is-checked"
-	elem 
 		name = "&Size"
 		command = ""
-		category = "&Icons"
 		saved-params = "is-checked"
 	elem "stretch"
 		name = "&Stretch to fit"
@@ -885,7 +902,6 @@ menu "menu"
 	elem 
 		name = "&Scaling"
 		command = ""
-		category = "&Icons"
 		saved-params = "is-checked"
 	elem "NN"
 		name = "&Nearest Neighbor"
@@ -908,7 +924,6 @@ menu "menu"
 		can-check = true
 		group = "scale"
 		saved-params = "is-checked"
-
 	elem 
 		name = "&Help"
 		command = ""
@@ -1157,7 +1172,7 @@ window "mainwindow"
 		anchor2 = none
 		saved-params = ""
 		text = "Hotkey Toggle"
-		command = ".winset \"mainwindow.macro!=macro ? mainwindow.macro=macro hotkey_toggle.is-checked=false input.focus=true : mainwindow.macro=hotkeymode hotkey_toggle.is-checked=true mapwindow.map.focus=true\""
+		command = ".winset \"mainwindow.macro!=macro ? mainwindow.macro=macro hotkey_toggle.is-checked=false input.focus=true input.background-color=#d3b5b5 : mainwindow.macro=hotkeymode hotkey_toggle.is-checked=true mapwindow.map.focus=true input.background-color=#f0f0f0\""
 		button-type = pushbox
 	elem "mainvsplit"
 		type = CHILD
@@ -1211,11 +1226,21 @@ window "mapwindow"
 		anchor2 = 100,100
 		font-family = "Arial Rounded MT Bold,Arial Black,Arial,sans-serif"
 		font-size = 7
-		text-color = none
 		is-default = true
 		saved-params = "icon-size"
 		on-show = ".winset\"mainwindow.mainvsplit.left=mapwindow\""
 		on-hide = ".winset\"mainwindow.mainvsplit.left=\""
+	elem "lobbybrowser"
+		type = BROWSER
+		pos = 0,0
+		size = 640x480
+		anchor1 = 0,0
+		anchor2 = 100,100
+		background-color = none
+		is-visible = false
+		is-disabled = true
+		saved-params = ""
+		auto-format = false
 
 window "outputwindow"
 	elem "outputwindow"
@@ -1254,16 +1279,34 @@ window "rpane"
 	elem "rpanewindow"
 		type = CHILD
 		pos = 0,0
-		size = 640x499
+		size = 640x474
 		anchor1 = 0,0
 		anchor2 = 100,100
 		saved-params = "splitter"
 		right = "outputwindow"
 		is-vert = false
+	elem "github"
+		type = BUTTON
+		pos = 476,0
+		size = 60x15
+		anchor1 = none
+		anchor2 = none
+		saved-params = "is-checked"
+		text = "GitHub"
+		command = "GitHub"
+	elem "BugReport"
+		type = BUTTON
+		pos = 536,0
+		size = 60x15
+		anchor1 = none
+		anchor2 = none
+		saved-params = "is-checked"
+		text = "Bug Report"
+		command = "Bug-Report"
 	elem "rulesb"
 		type = BUTTON
-		pos = 278,0
-		size = 60x16
+		pos = 120,0
+		size = 60x15
 		anchor1 = none
 		anchor2 = none
 		saved-params = "is-checked"
@@ -1272,8 +1315,8 @@ window "rpane"
 		group = "rpanemode"
 	elem "changelog"
 		type = BUTTON
-		pos = 341,0
-		size = 67x16
+		pos = 416,0
+		size = 60x15
 		anchor1 = none
 		anchor2 = none
 		saved-params = "is-checked"
@@ -1282,8 +1325,8 @@ window "rpane"
 		group = "rpanemode"
 	elem "Lore"
 		type = BUTTON
-		pos = 413,0
-		size = 67x16
+		pos = 208,0
+		size = 60x15
 		anchor1 = none
 		anchor2 = none
 		saved-params = "is-checked"
@@ -1292,8 +1335,8 @@ window "rpane"
 		group = "rpanemode"
 	elem "forumb"
 		type = BUTTON
-		pos = 215,0
-		size = 60x16
+		pos = 328,0
+		size = 60x15
 		anchor1 = none
 		anchor2 = none
 		saved-params = "is-checked"
@@ -1302,8 +1345,8 @@ window "rpane"
 		group = "rpanemode"
 	elem "wikib"
 		type = BUTTON
-		pos = 152,0
-		size = 60x16
+		pos = 268,0
+		size = 60x15
 		anchor1 = none
 		anchor2 = none
 		saved-params = "is-checked"
@@ -1313,7 +1356,7 @@ window "rpane"
 	elem "textb"
 		type = BUTTON
 		pos = 0,0
-		size = 60x16
+		size = 60x15
 		anchor1 = none
 		anchor2 = none
 		is-visible = false
@@ -1325,8 +1368,8 @@ window "rpane"
 		button-type = pushbox
 	elem "browseb"
 		type = BUTTON
-		pos = 464,0
-		size = 60x16
+		pos = 896,0
+		size = 60x15
 		anchor1 = none
 		anchor2 = none
 		is-visible = false
@@ -1337,8 +1380,8 @@ window "rpane"
 		button-type = pushbox
 	elem "infob"
 		type = BUTTON
-		pos = 64,0
-		size = 60x16
+		pos = 60,0
+		size = 60x15
 		anchor1 = none
 		anchor2 = none
 		is-visible = false

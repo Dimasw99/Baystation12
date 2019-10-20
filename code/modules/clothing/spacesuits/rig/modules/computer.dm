@@ -180,7 +180,7 @@
 		else if(user)
 			user.put_in_hands(ai_card)
 		else
-			ai_card.forceMove(get_turf(src))
+			ai_card.dropInto(loc)
 	ai_card = null
 	integrated_ai = null
 	update_verb_holder()
@@ -279,9 +279,6 @@
 			incoming_files = input_machine.files
 		else if(istype(input_device,/obj/machinery/r_n_d/server))
 			var/obj/machinery/r_n_d/server/input_machine = input_device
-			incoming_files = input_machine.files
-		else if(istype(input_device,/obj/machinery/mecha_part_fabricator))
-			var/obj/machinery/mecha_part_fabricator/input_machine = input_device
 			incoming_files = input_machine.files
 
 		if(!incoming_files || !incoming_files.known_tech || !incoming_files.known_tech.len)

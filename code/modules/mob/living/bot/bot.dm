@@ -3,8 +3,16 @@
 	health = 20
 	maxHealth = 20
 	icon = 'icons/mob/bot/placeholder.dmi'
-	universal_speak = 1
+	universal_speak = TRUE
 	density = 0
+
+	meat_type = null
+	meat_amount = 0
+	skin_material = null
+	skin_amount = 0
+	bone_material = null
+	bone_amount = 0
+
 	var/obj/item/weapon/card/id/botcard = null
 	var/list/botcard_access = list()
 	var/on = 1
@@ -16,7 +24,6 @@
 
 	var/obj/access_scanner = null
 	var/list/req_access = list()
-	var/list/req_one_access = list()
 
 	var/atom/target = null
 	var/list/ignore_list = list()
@@ -37,7 +44,6 @@
 	var/frustration = 0
 	var/max_frustration = 0
 
-	plane = HIDING_MOB_PLANE
 	layer = HIDING_MOB_LAYER
 
 /mob/living/bot/New()
@@ -49,7 +55,6 @@
 
 	access_scanner = new /obj(src)
 	access_scanner.req_access = req_access.Copy()
-	access_scanner.req_one_access = req_one_access.Copy()
 
 /mob/living/bot/Initialize()
 	. = ..()

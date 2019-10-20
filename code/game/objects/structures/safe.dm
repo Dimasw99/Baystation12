@@ -21,15 +21,6 @@ FLOOR SAFES
 	var/space = 0		//the combined w_class of everything in the safe
 	var/maxspace = 24	//the maximum combined w_class of stuff in the safe
 
-
-/obj/structure/safe/New()
-	tumbler_1_pos = rand(0, 72)
-	tumbler_1_open = rand(0, 72)
-
-	tumbler_2_pos = rand(0, 72)
-	tumbler_2_open = rand(0, 72)
-
-
 /obj/structure/safe/Initialize()
 	for(var/obj/item/I in loc)
 		if(space >= maxspace)
@@ -38,6 +29,11 @@ FLOOR SAFES
 			space += I.w_class
 			I.forceMove(src)
 	. = ..()
+	tumbler_1_pos = rand(0, 72)
+	tumbler_1_open = rand(0, 72)
+
+	tumbler_2_pos = rand(0, 72)
+	tumbler_2_open = rand(0, 72)
 
 /obj/structure/safe/proc/check_unlocked(mob/user as mob, canhear)
 	if(user && canhear)
@@ -65,7 +61,7 @@ FLOOR SAFES
 	return num
 
 
-/obj/structure/safe/update_icon()
+/obj/structure/safe/on_update_icon()
 	if(open)
 		icon_state = "[initial(icon_state)]-open"
 	else

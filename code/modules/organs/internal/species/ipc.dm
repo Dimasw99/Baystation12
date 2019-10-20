@@ -43,7 +43,7 @@
 		brainmob.SetName(H.real_name)
 		brainmob.real_name = H.real_name
 		brainmob.dna = H.dna.Clone()
-		brainmob.add_language("Encoded Audio Language")
+		brainmob.add_language(LANGUAGE_EAL)
 
 /obj/item/organ/internal/posibrain/Destroy()
 	QDEL_NULL(brainmob)
@@ -134,7 +134,7 @@
 	verbs -= shackled_verbs
 	update_icon()
 
-/obj/item/organ/internal/posibrain/update_icon()
+/obj/item/organ/internal/posibrain/on_update_icon()
 	if(src.brainmob && src.brainmob.key)
 		icon_state = "posibrain-occupied"
 	else

@@ -1,6 +1,3 @@
-/var/const/meteor_wave_delay = 1 MINUTE //minimum wait between waves in tenths of seconds
-//set to at least 100 unless you want evarr ruining every round
-
 //Meteor groups, used for various random events and the Meteor gamemode.
 
 // Dust, used by space dust event and during earliest stages of meteor mode.
@@ -142,6 +139,7 @@
 	var/z_original
 	var/meteordrop = /obj/item/weapon/ore/iron
 	var/dropamt = 1
+	var/ismissile //missiles don't spin
 
 	var/move_count = 0
 
@@ -168,7 +166,8 @@
 
 /obj/effect/meteor/New()
 	..()
-	SpinAnimation()
+	if(!ismissile)
+		SpinAnimation()
 
 /obj/effect/meteor/Bump(atom/A)
 	..()
@@ -339,3 +338,49 @@
 
 /obj/effect/meteor/supermatter/get_shield_damage()
 	return ..() * rand(80, 120)
+
+//Missiles, for events and so on
+/obj/effect/meteor/supermatter/missile
+	name = "photon torpedo"
+	desc = "An advanded warhead designed to tactically destroy space installations."
+	icon = 'icons/obj/missile.dmi'
+	icon_state = "photon"
+	meteordrop = null
+	ismissile = TRUE
+	dropamt = 0
+
+/obj/effect/meteor/medium/missile
+	name = "missile"
+	desc = "Some kind of missile."
+	icon = 'icons/obj/missile.dmi'
+	icon_state = "missile"
+	meteordrop = null
+	ismissile = TRUE
+	dropamt = 0
+
+/obj/effect/meteor/big/missile
+	name = "high-yield missile"
+	desc = "Some kind of missile."
+	icon = 'icons/obj/missile.dmi'
+	icon_state = "missile"
+	meteordrop = null
+	ismissile = TRUE
+	dropamt = 0
+
+/obj/effect/meteor/flaming/missile
+	name = "incendiary missile"
+	desc = "Some kind of missile."
+	icon = 'icons/obj/missile.dmi'
+	icon_state = "missile"
+	meteordrop = null
+	ismissile = TRUE
+	dropamt = 0
+
+/obj/effect/meteor/emp/missile
+	name = "ion torpedo"
+	desc = "Some kind of missile."
+	icon = 'icons/obj/missile.dmi'
+	icon_state = "torpedo"
+	meteordrop = null
+	ismissile = TRUE
+	dropamt = 0

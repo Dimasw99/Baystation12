@@ -7,7 +7,6 @@
 
 	idle_power_usage = 100
 	active_power_usage = 1000
-	use_power = 1
 
 	var/spawn_progress_time = 0
 	var/max_spawn_time = 50
@@ -29,11 +28,11 @@
 	/mob/living/simple_animal/hostile/mimic,
 	/mob/living/simple_animal/hostile/viscerator,
 	/mob/living/simple_animal/hostile/hivebot,
-	/obj/item/device/analyzer,
+	/obj/item/device/scanner/gas,
 	/obj/item/device/camera,
 	/obj/item/device/flash,
 	/obj/item/device/flashlight,
-	/obj/item/device/healthanalyzer,
+	/obj/item/device/scanner/health,
 	/obj/item/device/multitool,
 	/obj/item/device/paicard,
 	/obj/item/device/radio,
@@ -42,17 +41,17 @@
 	/obj/item/weapon/autopsy_scanner,
 	/obj/item/weapon/bikehorn,
 	/obj/item/weapon/bonesetter,
-	/obj/item/weapon/material/knife/butch,
+	/obj/item/weapon/material/knife/kitchen/cleaver,
 	/obj/item/weapon/caution,
 	/obj/item/weapon/caution/cone,
 	/obj/item/weapon/crowbar,
-	/obj/item/weapon/clipboard,
+	/obj/item/weapon/material/clipboard,
 	/obj/item/weapon/cell,
 	/obj/item/weapon/circular_saw,
 	/obj/item/weapon/material/hatchet,
 	/obj/item/weapon/handcuffs,
 	/obj/item/weapon/hemostat,
-	/obj/item/weapon/material/knife,
+	/obj/item/weapon/material/knife/kitchen,
 	/obj/item/weapon/flame/lighter,
 	/obj/item/weapon/light/bulb,
 	/obj/item/weapon/light/tube,
@@ -83,7 +82,7 @@
 		[pick("front","side","top","bottom","rear","inside")].</span>"
 
 /obj/machinery/replicator/Process()
-	if(spawning_types.len && powered())
+	if(spawning_types.len && !(stat & NOPOWER))
 		spawn_progress_time += world.time - last_process_time
 		if(spawn_progress_time > max_spawn_time)
 			src.visible_message("<span class='notice'>\icon[src] [src] pings!</span>")
@@ -105,7 +104,7 @@
 			max_spawn_time = rand(30,100)
 
 			if(!spawning_types.len || !stored_materials.len)
-				use_power = 1
+				update_use_power(POWER_USE_IDLE)
 				icon_state = "borgcharger0(old)"
 
 		else if(prob(5))
@@ -113,8 +112,9 @@
 
 	last_process_time = world.time
 
-/obj/machinery/replicator/attack_hand(mob/user as mob)
+/obj/machinery/replicator/interface_interact(mob/user)
 	interact(user)
+	return TRUE
 
 /obj/machinery/replicator/interact(mob/user)
 	var/dat = "The control panel displays an incomprehensible selection of controls, many with unusual markings or text around them.<br>"
@@ -142,7 +142,7 @@
 
 				spawning_types.Add(construction[construction[index]])
 				spawn_progress_time = 0
-				use_power = 2
+				update_use_power(POWER_USE_ACTIVE)
 				icon_state = "borgcharger1(old)"
 			else
 				src.visible_message(fail_message)

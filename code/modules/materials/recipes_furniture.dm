@@ -132,13 +132,23 @@ ARMCHAIR(yellow)
 	result_type = /obj/item/weapon/stool
 
 /datum/stack_recipe/furniture/bar_stool
-	title = "bar_stool"
+	title = "bar stool"
 	result_type = /obj/item/weapon/stool/bar
 
 /datum/stack_recipe/furniture/bed
 	title = "bed"
 	result_type = /obj/structure/bed
 	req_amount = 2
+
+/datum/stack_recipe/furniture/pew
+	title = "pew, right"
+	result_type = /obj/structure/bed/chair/pew
+	req_amount = 4
+
+/datum/stack_recipe/furniture/pew_left
+	title = "pew, left"
+	result_type = /obj/structure/bed/chair/pew/left
+	req_amount = 4
 
 /datum/stack_recipe/furniture/table_frame
 	title = "table frame"
@@ -162,9 +172,16 @@ ARMCHAIR(yellow)
 	time = 10
 	send_material_data = 0
 
+/datum/stack_recipe/furniture/tank
+	title = "Pressure Tank"
+	result_type = /obj/item/pipe/tank
+	req_amount = 30
+	time = 20
+	send_material_data = 0
+
 /datum/stack_recipe/furniture/computerframe
 	title = "computer frame"
-	result_type = /obj/structure/computerframe
+	result_type = /obj/machinery/constructable_frame/computerframe
 	req_amount = 5
 	time = 25
 
@@ -174,10 +191,10 @@ ARMCHAIR(yellow)
 	req_amount = 2
 	time = 50
 
-/datum/stack_recipe/furniture/wall
+/datum/stack_recipe/furniture/wall_frame
 	title = "low wall frame"
 	result_type = /obj/structure/wall_frame
-	req_amount = 2
+	req_amount = 3
 	time = 50
 
 /datum/stack_recipe/furniture/machine
@@ -210,6 +227,10 @@ ARMCHAIR(yellow)
 	title = "high security airlock assembly"
 	result_type = /obj/structure/door_assembly/door_assembly_highsecurity
 
+/datum/stack_recipe/furniture/door_assembly/ext
+	title = "exterior airlock assembly"
+	result_type = /obj/structure/door_assembly/door_assembly_ext
+
 /datum/stack_recipe/furniture/door_assembly/firedoor
 	title = "emergency shutter"
 	result_type = /obj/structure/firedoor_assembly
@@ -239,6 +260,12 @@ ARMCHAIR(yellow)
 	req_amount = 5
 	time = 15
 
+/datum/stack_recipe/furniture/coffin/wooden
+	title = "coffin"
+	result_type = /obj/structure/closet/coffin/wooden
+	req_amount = 5
+	time = 15
+
 /datum/stack_recipe/furniture/bookcase
 	title = "book shelf"
 	result_type = /obj/structure/bookcase
@@ -251,3 +278,56 @@ ARMCHAIR(yellow)
 	req_amount = 3
 	time = 10
 	send_material_data = 0
+
+/datum/stack_recipe/furniture/fullwindow
+	title = "full-tile window"
+	result_type = /obj/structure/window
+	req_amount = 4
+	time = 15
+	one_per_turf = 0
+
+/datum/stack_recipe/furniture/fullwindow/can_make(mob/user)
+	. = ..()
+	if(.)
+		for(var/obj/structure/window/check_window in user.loc)
+			if(check_window.is_fulltile())
+				to_chat(user, "<span class='warning'>There is already a fll-tile window here!</span>")
+				return FALSE
+
+/datum/stack_recipe/furniture/fullwindow/spawn_result(mob/user, location, amount)
+	return new result_type(user.loc, SOUTHWEST, 1, use_material, use_reinf_material)
+
+/datum/stack_recipe/furniture/borderwindow
+	title = "border window"
+	result_type = /obj/structure/window
+	req_amount = 1
+	time = 5
+	one_per_turf = 0
+
+/datum/stack_recipe/furniture/borderwindow/can_make(mob/user)
+	. = ..()
+	if(.)
+		for(var/obj/structure/window/check_window in user.loc)
+			if(check_window.dir == user.dir)
+				to_chat(user, "<span class='warning'>There is already a window facing that direction here!</span>")
+				return FALSE
+
+/datum/stack_recipe/furniture/borderwindow/spawn_result(mob/user, location, amount)
+	return new result_type(user.loc, user.dir, 1, use_material, use_reinf_material)
+
+/datum/stack_recipe/furniture/windoor
+	title = "windoor assembly"
+	result_type = /obj/structure/windoor_assembly
+	req_amount = 1
+	time = 20
+	one_per_turf = 1
+
+/datum/stack_recipe/furniture/windoor/can_make(mob/user)
+	. = ..()
+	if(.)
+		if(locate(/obj/machinery/door/window) in user.loc)
+			to_chat(user, "<span class='warning'>There is already a windoor here!</span>")
+			return FALSE
+
+/datum/stack_recipe/furniture/windoor/spawn_result(mob/user, location, amount)
+	return new result_type(user.loc, user.dir, 1, use_material, use_reinf_material)

@@ -7,7 +7,7 @@
 	var/totalPlayersReady = 0
 	var/datum/browser/panel
 	var/show_invalid_jobs = 0
-	universal_speak = 1
+	universal_speak = TRUE
 
 	invisibility = 101
 
@@ -23,26 +23,19 @@
 	..()
 	verbs += /mob/proc/toggle_antag_pool
 
-/mob/new_player/verb/new_player_panel()
-	set src = usr
-	new_player_panel_proc()
-
-/mob/new_player/proc/new_player_panel_proc()
-	var/output = "<div align='center'>"
+/mob/new_player/proc/new_player_panel(force = FALSE)
+	if(!SScharacter_setup.initialized && !force)
+		return // Not ready yet.
+	var/output = list()
+	output += "<div align='center'>"
+	output += "<i>[GLOB.using_map.get_map_info()]</i>"
 	output +="<hr>"
-	output += "<p><a href='byond://?src=\ref[src];show_preferences=1'>Setup Character</A></p>"
+	output += "<a href='byond://?src=\ref[src];show_preferences=1'>Setup Character</A> "
 
-	if(!ticker || ticker.current_state <= GAME_STATE_PREGAME)
-		if(ready)
-			output += "<p>\[ <span class='linkOn'><b>Ready</b></span> | <a href='byond://?src=\ref[src];ready=0'>Not Ready</a> \]</p>"
-		else
-			output += "<p>\[ <a href='byond://?src=\ref[src];ready=1'>Ready</a> | <span class='linkOn'><b>Not Ready</b></span> \]</p>"
+	if(GAME_STATE > RUNLEVEL_LOBBY)
+		output += "<a href='byond://?src=\ref[src];manifest=1'>View the Crew Manifest</A> "
 
-	else
-		output += "<a href='byond://?src=\ref[src];manifest=1'>View the Crew Manifest</A><br><br>"
-		output += "<p><a href='byond://?src=\ref[src];late_join=1'>Join Game!</A></p>"
-
-	output += "<p><a href='byond://?src=\ref[src];observe=1'>Observe</A></p>"
+	output += "<a href='byond://?src=\ref[src];observe=1'>Observe</A> "
 
 	if(!IsGuestKey(src.key))
 		establish_db_connection()
@@ -58,31 +51,39 @@
 				break
 
 			if(newpoll)
-				output += "<p><b><a href='byond://?src=\ref[src];showpoll=1'>Show Player Polls</A> (NEW!)</b></p>"
+				output += "<b><a href='byond://?src=\ref[src];showpoll=1'>Show Player Polls</A> (NEW!)</b> "
 			else
-				output += "<p><a href='byond://?src=\ref[src];showpoll=1'>Show Player Polls</A></p>"
+				output += "<a href='byond://?src=\ref[src];showpoll=1'>Show Player Polls</A> "
+
+	output += "<hr>Current character: <b>[client.prefs.real_name]</b>[client.prefs.job_high ? ", [client.prefs.job_high]" : null]<br>"
+	if(GAME_STATE <= RUNLEVEL_LOBBY)
+		if(ready)
+			output += "<a class='linkOn' href='byond://?src=\ref[src];ready=0'>Un-Ready</a>"
+		else
+			output += "<a href='byond://?src=\ref[src];ready=1'>Ready Up</a>"
+	else
+		output += "<a href='byond://?src=\ref[src];late_join=1'>Join Game!</A>"
 
 	output += "</div>"
 
-	panel = new(src, "Welcome","Welcome", 210, 280, src)
+	panel = new(src, "Welcome","Welcome to [GLOB.using_map.full_name]", 560, 280, src)
 	panel.set_window_options("can_close=0")
-	panel.set_content(output)
+	panel.set_content(JOINTEXT(output))
 	panel.open()
-	return
 
 /mob/new_player/Stat()
 	. = ..()
 
-	if(statpanel("Lobby") && ticker)
+	if(statpanel("Lobby"))
 		if(check_rights(R_INVESTIGATE, 0, src))
-			stat("Game Mode:", "[ticker.mode || master_mode][ticker.hide_mode ? " (Secret)" : ""]")
+			stat("Game Mode:", "[SSticker.mode ? SSticker.mode.name : SSticker.master_mode] ([SSticker.master_mode])")
 		else
 			stat("Game Mode:", PUBLIC_GAME_MODE)
 		var/extra_antags = list2params(additional_antag_types)
 		stat("Added Antagonists:", extra_antags ? extra_antags : "None")
 
-		if(ticker.current_state == GAME_STATE_PREGAME)
-			stat("Time To Start:", "[ticker.pregame_timeleft][round_progressing ? "" : " (DELAYED)"]")
+		if(GAME_STATE <= RUNLEVEL_LOBBY)
+			stat("Time To Start:", "[round(SSticker.pregame_timeleft/10)][SSticker.round_progressing ? "" : " (DELAYED)"]")
 			stat("Players: [totalPlayers]", "Players Ready: [totalPlayersReady]")
 			totalPlayers = 0
 			totalPlayersReady = 0
@@ -102,17 +103,17 @@
 		return 1
 
 	if(href_list["ready"])
-		if(!ticker || ticker.current_state <= GAME_STATE_PREGAME) // Make sure we don't ready up after the round has started
+		if(GAME_STATE <= RUNLEVEL_LOBBY) // Make sure we don't ready up after the round has started
 			ready = text2num(href_list["ready"])
 		else
 			ready = 0
 
 	if(href_list["refresh"])
 		panel.close()
-		new_player_panel_proc()
+		new_player_panel()
 
 	if(href_list["observe"])
-		if(!(initialization_stage&INITIALIZATION_COMPLETE))
+		if(GAME_STATE < RUNLEVEL_LOBBY)
 			to_chat(src, "<span class='warning'>Please wait for server initialization to complete...</span>")
 			return
 
@@ -155,7 +156,7 @@
 
 	if(href_list["late_join"])
 
-		if(!ticker || ticker.current_state != GAME_STATE_PLAYING)
+		if(GAME_STATE != RUNLEVEL_GAME)
 			to_chat(usr, "<span class='warning'>The round is either not ready, or has already finished...</span>")
 			return
 		LateChoices() //show the latejoin job selection menu
@@ -164,9 +165,9 @@
 		ViewManifest()
 
 	if(href_list["SelectedJob"])
-		var/datum/job/job = job_master.GetJob(href_list["SelectedJob"])
+		var/datum/job/job = SSjobs.get_by_title(href_list["SelectedJob"])
 
-		if(!job_master.CheckGeneralJoinBlockers(src, job))
+		if(!SSjobs.check_general_join_blockers(src, job))
 			return FALSE
 
 		var/datum/species/S = all_species[client.prefs.species]
@@ -279,19 +280,11 @@
 					if(!isnull(href_list["option_[optionid]"]))	//Test if this optionid was selected
 						vote_on_poll(pollid, optionid, 1)
 
-/mob/new_player/proc/get_branch_pref()
-	if(client)
-		return client.prefs.char_branch
-
-/mob/new_player/proc/get_rank_pref()
-	if(client)
-		return client.prefs.char_rank
-
 /mob/new_player/proc/AttemptLateSpawn(var/datum/job/job, var/spawning_at)
 
 	if(src != usr)
 		return 0
-	if(!ticker || ticker.current_state != GAME_STATE_PLAYING)
+	if(GAME_STATE != RUNLEVEL_GAME)
 		to_chat(usr, "<span class='warning'>The round is either not ready, or has already finished...</span>")
 		return 0
 	if(!config.enter_allowed)
@@ -304,13 +297,13 @@
 	if(job.is_restricted(client.prefs, src))
 		return
 
-	var/datum/spawnpoint/spawnpoint = job_master.get_spawnpoint_for(client, job.title)
+	var/datum/spawnpoint/spawnpoint = job.get_spawnpoint(client)
 	var/turf/spawn_turf = pick(spawnpoint.turfs)
 	if(job.latejoin_at_spawnpoints)
-		var/obj/S = job_master.get_roundstart_spawnpoint(job.title)
+		var/obj/S = job.get_roundstart_spawnpoint()
 		spawn_turf = get_turf(S)
 
-	if(!job_master.CheckUnsafeSpawn(src, spawn_turf))
+	if(!SSjobs.check_unsafe_spawn(src, spawn_turf))
 		return
 
 	// Just in case someone stole our position while we were waiting for input from alert() proc
@@ -318,14 +311,14 @@
 		to_chat(src, alert("[job.title] is not available. Please try another."))
 		return 0
 
-	job_master.AssignRole(src, job.title, 1)
+	SSjobs.assign_role(src, job.title, 1)
 
 	var/mob/living/character = create_character(spawn_turf)	//creates the human and transfers vars and mind
 	if(!character)
 		return 0
 
-	character = job_master.EquipRank(character, job.title, 1)					//equips the human
-	equip_custom_items(character)
+	character = SSjobs.equip_rank(character, job.title, 1)					//equips the human
+	SScustomitems.equip_custom_items(character)
 
 	// AIs don't need a spawnpoint, they must spawn at an empty core
 	if(character.mind.assigned_role == "AI")
@@ -341,32 +334,33 @@
 		A.on_mob_init()
 
 		AnnounceCyborg(character, job.title, "has been downloaded to the empty core in \the [character.loc.loc]")
-		ticker.mode.handle_latejoin(character)
+		SSticker.mode.handle_latejoin(character)
 
 		qdel(C)
 		qdel(src)
 		return
 
-	ticker.mode.handle_latejoin(character)
+	SSticker.mode.handle_latejoin(character)
 	GLOB.universe.OnPlayerLatejoin(character)
-	if(job_master.ShouldCreateRecords(job.title))
+	spawnpoint.after_join(character)
+	if(job.create_record)
 		if(character.mind.assigned_role != "Robot")
 			CreateModularRecord(character)
-			ticker.minds += character.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
+			SSticker.minds += character.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
 			AnnounceArrival(character, job, spawnpoint.msg)
 		else
 			AnnounceCyborg(character, job, spawnpoint.msg)
 		matchmaker.do_matchmaking()
 	log_and_message_admins("has joined the round as [character.mind.assigned_role].", character)
 
-	if(character.cannot_stand())
+	if(character.needs_wheelchair())
 		equip_wheelchair(character)
 
 	qdel(src)
 
 
 /mob/new_player/proc/AnnounceCyborg(var/mob/living/character, var/rank, var/join_message)
-	if (ticker.current_state == GAME_STATE_PLAYING)
+	if (GAME_STATE == RUNLEVEL_GAME)
 		if(character.mind.role_alt_title)
 			rank = character.mind.role_alt_title
 		// can't use their name here, since cyborg namepicking is done post-spawn, so we'll just say "A new Cyborg has arrived"/"A new Android has arrived"/etc.
@@ -375,33 +369,39 @@
 /mob/new_player/proc/LateChoices()
 	var/name = client.prefs.be_random_name ? "friend" : client.prefs.real_name
 
-	var/list/dat = list("<html><body><center>")
-	dat += "<b>Welcome, [name].<br></b>"
-	dat += "Round Duration: [roundduration2text()]<br>"
+	var/list/header = list("<html><body><center>")
+	header += "<b>Welcome, [name].<br></b>"
+	header += "Round Duration: [roundduration2text()]<br>"
 
 	if(evacuation_controller.has_evacuated())
-		dat += "<font color='red'><b>The [station_name()] has been evacuated.</b></font><br>"
+		header += "<font color='red'><b>The [station_name()] has been evacuated.</b></font><br>"
 	else if(evacuation_controller.is_evacuating())
 		if(evacuation_controller.emergency_evacuation) // Emergency shuttle is past the point of no recall
-			dat += "<font color='red'>The [station_name()] is currently undergoing evacuation procedures.</font><br>"
+			header += "<font color='red'>The [station_name()] is currently undergoing evacuation procedures.</font><br>"
 		else                                           // Crew transfer initiated
-			dat += "<font color='red'>The [station_name()] is currently undergoing crew transfer procedures.</font><br>"
+			header += "<font color='red'>The [station_name()] is currently undergoing crew transfer procedures.</font><br>"
 
+	var/list/dat = list()
 	dat += "Choose from the following open/valid positions:<br>"
 	dat += "<a href='byond://?src=\ref[src];invalid_jobs=1'>[show_invalid_jobs ? "Hide":"Show"] unavailable jobs.</a><br>"
 	dat += "<table>"
 	dat += "<tr><td colspan = 3><b>[GLOB.using_map.station_name]:</b></td></tr>"
 
 	// TORCH JOBS
-	var/list/job_summaries = list()
-	for(var/datum/job/job in job_master.occupations)
+	var/list/job_summaries
+	var/list/hidden_reasons = list()
+	for(var/datum/job/job in SSjobs.primary_job_datums)
 		var/summary = job.get_join_link(client, "byond://?src=\ref[src];SelectedJob=[job.title]", show_invalid_jobs)
 		if(summary && summary != "")
-			job_summaries += summary
+			LAZYADD(job_summaries, summary)
+		else
+			for(var/raisin in job.get_unavailable_reasons(client))
+				hidden_reasons[raisin] = TRUE
+
 	if(LAZYLEN(job_summaries))
 		dat += job_summaries
 	else
-		dat += "No available positions."
+		dat += "<tr><td>No available positions.</td></tr>"
 	// END TORCH JOBS
 
 	// SUBMAP JOBS
@@ -414,7 +414,11 @@
 				var/datum/job/job = submap.jobs[otherthing]
 				var/summary = job.get_join_link(client, "byond://?src=\ref[submap];joining=\ref[src];join_as=[otherthing]", show_invalid_jobs)
 				if(summary && summary != "")
-					job_summaries += summary
+					LAZYADD(job_summaries, summary)
+				else
+					for(var/raisin in job.get_unavailable_reasons(client))
+						hidden_reasons[raisin] = TRUE
+
 			if(LAZYLEN(job_summaries))
 				dat += job_summaries
 			else
@@ -422,6 +426,13 @@
 	// END SUBMAP JOBS
 
 	dat += "</table></center>"
+	if(LAZYLEN(hidden_reasons))
+		var/list/additional_dat = list("<br><b>Some roles have been hidden from this list for the following reasons:</b><br>")
+		for(var/raisin in hidden_reasons)
+			additional_dat += "[raisin]<br>"
+		additional_dat += "<br>"
+		dat = additional_dat + dat
+	dat = header + dat
 	src << browse(jointext(dat, null), "window=latechoices;size=450x640;can_close=1")
 
 /mob/new_player/proc/create_character(var/turf/spawn_turf)
@@ -435,7 +446,10 @@
 		chosen_species = all_species[client.prefs.species]
 
 	if(!spawn_turf)
-		var/datum/spawnpoint/spawnpoint = job_master.get_spawnpoint_for(client, get_rank_pref())
+		var/datum/job/job = SSjobs.get_by_title(mind.assigned_role)
+		if(!job)
+			job = SSjobs.get_by_title(GLOB.using_map.default_assistant_title)
+		var/datum/spawnpoint/spawnpoint = job.get_spawnpoint(client, client.prefs.ranks[job.title])
 		spawn_turf = pick(spawnpoint.turfs)
 
 	if(chosen_species)
@@ -452,27 +466,19 @@
 
 	new_character.lastarea = get_area(spawn_turf)
 
-	for(var/lang in client.prefs.alternate_languages)
-		var/datum/language/chosen_language = all_languages[lang]
-		if(chosen_language)
-			var/is_species_lang = (chosen_language.name in new_character.species.secondary_langs)
-			if(is_species_lang || ((!(chosen_language.flags & RESTRICTED) || has_admin_rights()) && is_alien_whitelisted(src, chosen_language)))
-				new_character.add_language(lang)
-
-	if(ticker.random_players)
-		new_character.gender = pick(MALE, FEMALE)
+	if(GLOB.random_players)
+		client.prefs.gender = pick(MALE, FEMALE)
 		client.prefs.real_name = random_name(new_character.gender)
 		client.prefs.randomize_appearance_and_body_for(new_character)
-	else
-		client.prefs.copy_to(new_character)
+	client.prefs.copy_to(new_character)
 
 	sound_to(src, sound(null, repeat = 0, wait = 0, volume = 85, channel = GLOB.lobby_sound_channel))// MAD JAMS cant last forever yo
 
 	if(mind)
-		mind.active = 0					//we wish to transfer the key manually
+		mind.active = 0 //we wish to transfer the key manually
 		mind.original = new_character
 		if(client.prefs.memory)
-			mind.store_memory(client.prefs.memory)
+			mind.StoreMemory(client.prefs.memory)
 		if(client.prefs.relations.len)
 			for(var/T in client.prefs.relations)
 				var/TT = matchmaker.relation_types[T]
@@ -482,7 +488,6 @@
 			mind.gen_relations_info = client.prefs.relations_info["general"]
 		mind.transfer_to(new_character)					//won't transfer key since the mind is not active
 
-	new_character.SetName(real_name)
 	new_character.dna.ready_dna(new_character)
 	new_character.dna.b_type = client.prefs.b_type
 	new_character.sync_organ_dna()
@@ -490,10 +495,6 @@
 		// Set defer to 1 if you add more crap here so it only recalculates struc_enzymes once. - N3X
 		new_character.dna.SetSEState(GLOB.GLASSESBLOCK,1,0)
 		new_character.disabilities |= NEARSIGHTED
-
-	// Give them their cortical stack if we're using them.
-	if(config && config.use_cortical_stacks && client && client.prefs.has_cortical_stack /*&& new_character.should_have_organ(BP_BRAIN)*/)
-		new_character.create_stack()
 
 	// Do the initial caching of the player's body icons.
 	new_character.force_update_limbs()
@@ -518,11 +519,8 @@
 	src << browse(null, "window=latechoices") //closes late choices window
 	panel.close()
 
-/mob/new_player/proc/has_admin_rights()
-	return check_rights(R_ADMIN, 0, src)
-
 /mob/new_player/proc/check_species_allowed(datum/species/S, var/show_alert=1)
-	if(!(S.spawn_flags & SPECIES_CAN_JOIN) && !has_admin_rights())
+	if(!S.is_available_for_join() && !has_admin_rights())
 		if(show_alert)
 			to_chat(src, alert("Your current species, [client.prefs.species], is not available for play."))
 		return 0
@@ -566,3 +564,12 @@ mob/new_player/MayRespawn()
 
 /mob/new_player/say(var/message)
 	sanitize_and_communicate(/decl/communication_channel/ooc, client, message)
+
+/mob/new_player/verb/next_lobby_track()
+	set name = "Play Different Lobby Track"
+	set category = "OOC"
+
+	if(get_preference_value(/datum/client_preference/play_lobby_music) == GLOB.PREF_NO)
+		return
+	var/music_track/new_track = GLOB.using_map.get_lobby_track(GLOB.using_map.lobby_track.type)
+	new_track.play_to(src)

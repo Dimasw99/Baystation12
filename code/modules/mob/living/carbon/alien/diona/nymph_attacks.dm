@@ -7,7 +7,6 @@
 	var/mob/living/carbon/H = over_object
 
 	if(istype(H) && Adjacent(H) && (usr == H) && (H.a_intent == "grab") && hat && !(H.l_hand && H.r_hand))
-		hat.forceMove(get_turf(src))
 		H.put_in_hands(hat)
 		H.visible_message("<span class='danger'>\The [H] removes \the [src]'s [hat].</span>")
 		hat = null
@@ -73,7 +72,7 @@
 
 	. = ..()
 
-/mob/living/carbon/alien/diona/RangedAttack(atom/A)
+/mob/living/carbon/alien/diona/RangedAttack(atom/A, var/params)
 	if((a_intent == I_HURT || a_intent == I_GRAB) && holding_item)
 		setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 		visible_message("<span class='danger'>\The [src] spits \a [holding_item] at \the [A]!</span>")
@@ -81,6 +80,8 @@
 		unEquip(holding_item)
 		if(temp)
 			temp.throw_at(A, 10, rand(3,5), src)
+		return TRUE
+	. = ..()
 
 /mob/living/carbon/alien/diona/proc/handle_tray_interaction(var/obj/machinery/portable_atmospherics/hydroponics/tray)
 
@@ -117,7 +118,7 @@
 		if(nutrition >= nutrition_cost)
 			visible_message("<span class='notice'><b>\The [src]</b> secretes a trickle of green liquid, refilling [tray].</span>","<span class='notice'>You secrete some nutrients into \the [tray].</span>")
 			tray.nutrilevel = 10
-			nutrition -= (10-tray.nutrilevel) * 5
+			adjust_nutrition(-((10-tray.nutrilevel) * 5))
 		else
 			to_chat(src, "<span class='notice'>You haven't eaten enough to refill \the [tray]'s nutrients.</span>")
 		return

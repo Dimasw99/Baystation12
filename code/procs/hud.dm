@@ -5,6 +5,8 @@ the HUD updates properly! */
 // hud overlay image type, used for clearing client.images precisely
 /image/hud_overlay
 	appearance_flags = RESET_COLOR|RESET_TRANSFORM|KEEP_APART
+	layer = ABOVE_HUMAN_LAYER
+	plane = DEFAULT_PLANE
 
 //Medical HUD outputs. Called by the Life() proc of the mob using it, usually.
 proc/process_med_hud(var/mob/M, var/local_scanner, var/mob/Alt)
@@ -44,6 +46,11 @@ proc/process_sec_hud(var/mob/M, var/advanced_mode, var/mob/Alt)
 			P.Client.images += perp.hud_list[IMPLOYAL_HUD]
 			P.Client.images += perp.hud_list[IMPCHEM_HUD]
 
+proc/process_jani_hud(var/mob/M, var/mob/Alt)
+	var/datum/arranged_hud_process/P = arrange_hud_process(M, Alt, GLOB.jani_hud_users)
+	for (var/obj/effect/decal/cleanable/dirtyfloor in view(P.Mob))
+		P.Client.images += dirtyfloor.hud_overlay
+
 datum/arranged_hud_process
 	var/client/Client
 	var/mob/Mob
@@ -73,6 +80,7 @@ mob/proc/handle_hud_glasses() //Used in the life.dm of mobs that can use HUDs.
 			client.images -= hud
 	GLOB.med_hud_users -= src
 	GLOB.sec_hud_users -= src
+	GLOB.jani_hud_users -= src
 
 mob/proc/in_view(var/turf/T)
 	return view(T)

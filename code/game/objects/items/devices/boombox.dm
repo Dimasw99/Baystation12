@@ -80,7 +80,6 @@
 		start()
 		return TOPIC_HANDLED
 	if(href_list["volup"])
-		volume += 10
 		change_volume(volume + 10)
 		return TOPIC_HANDLED
 	if(href_list["voldown"])
@@ -163,7 +162,7 @@
 		return FALSE
 	return TRUE
 
-/obj/item/device/boombox/update_icon()
+/obj/item/device/boombox/on_update_icon()
 	icon_state = playing ? "on" : "off"
 
 /obj/item/device/boombox/proc/stop()

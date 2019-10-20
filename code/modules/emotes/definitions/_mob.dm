@@ -29,9 +29,9 @@
 		/decl/emote/visible/roll,
 		/decl/emote/visible/shake,
 		/decl/emote/visible/jump,
-		/decl/emote/visible/hiss,
 		/decl/emote/visible/shiver,
 		/decl/emote/visible/collapse,
+		/decl/emote/audible/hiss,
 		/decl/emote/audible,
 		/decl/emote/audible/deathgasp_alien,
 		/decl/emote/audible/whimper,
@@ -55,9 +55,9 @@
 		/decl/emote/visible/roll,
 		/decl/emote/visible/shake,
 		/decl/emote/visible/jump,
-		/decl/emote/visible/hiss,
 		/decl/emote/visible/shiver,
 		/decl/emote/visible/collapse,
+		/decl/emote/audible/hiss,
 		/decl/emote/audible,
 		/decl/emote/audible/scretch,
 		/decl/emote/audible/choke,
@@ -111,6 +111,7 @@
 		/decl/emote/audible/groan,
 		/decl/emote/audible/moan,
 		/decl/emote/audible/grunt,
+		/decl/emote/audible/slap,
 		/decl/emote/human,
 		/decl/emote/human/deathgasp,
 		/decl/emote/audible/giggle,
@@ -143,7 +144,26 @@
 		/decl/emote/visible/hug,
 		/decl/emote/visible/dap,
 		/decl/emote/visible/signal,
-		/decl/emote/visible/handshake
+		/decl/emote/visible/handshake,
+		/decl/emote/visible/afold,
+		/decl/emote/visible/alook,
+		/decl/emote/visible/eroll,
+		/decl/emote/visible/hbow,
+		/decl/emote/visible/hip,
+		/decl/emote/visible/holdup,
+		/decl/emote/visible/hshrug,
+		/decl/emote/visible/crub,
+		/decl/emote/visible/erub,
+		/decl/emote/visible/fslap,
+		/decl/emote/visible/ftap,
+		/decl/emote/visible/hrub,
+		/decl/emote/visible/hspread,
+		/decl/emote/visible/pocket,
+		/decl/emote/visible/rsalute,
+		/decl/emote/visible/rshoulder,
+		/decl/emote/visible/squint,
+		/decl/emote/visible/tfist,
+		/decl/emote/visible/tilt
 	)
 
 /mob/living/silicon/robot
@@ -169,6 +189,13 @@
 		/decl/emote/audible/synth/security,
 		/decl/emote/audible/synth/security/halt
 		)
+
+/mob/living/silicon/robot/flying/ascent
+	default_emotes = list(
+		/decl/emote/audible/ascent_purr,
+		/decl/emote/audible/ascent_hiss,
+		/decl/emote/audible/ascent_snarl
+	)
 
 /mob/living/carbon/slime
 	default_emotes = list(

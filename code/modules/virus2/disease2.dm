@@ -9,9 +9,9 @@ LEGACY_RECORD_STRUCTURE(virus_records, virus_record)
 	var/clicks = 0
 	var/uniqueID = 0
 	var/list/datum/disease2/effect/effects = list()
-	var/antigen = list() // 16 bits describing the antigens, when one bit is set, a cure with that bit can dock here
+	var/antigen = list() //A list of characters that represent antigens that cure this virus.
 	var/max_stage = 4
-	var/list/affected_species = list(SPECIES_HUMAN,SPECIES_UNATHI,SPECIES_SKRELL,SPECIES_TAJARA)
+	var/list/affected_species = list(SPECIES_HUMAN,SPECIES_UNATHI,SPECIES_SKRELL)
 
 /datum/disease2/disease/New()
 	uniqueID = rand(0,10000)
@@ -115,11 +115,18 @@ LEGACY_RECORD_STRUCTURE(virus_records, virus_record)
 	if(!mob.chem_effects[CE_ANTIVIRAL])
 		mob.bodytemperature = max(mob.bodytemperature, min(310+5*min(stage,max_stage) ,mob.bodytemperature+5*min(stage,max_stage)))
 
-/datum/disease2/disease/proc/cure(var/mob/living/carbon/mob, antigen)
+/datum/disease2/disease/proc/cure(var/mob/living/carbon/mob, mob_gains_antigens)
 	for(var/datum/disease2/effect/e in effects)
 		e.deactivate(mob)
+
 	mob.virus2.Remove("[uniqueID]")
-	if(antigen)
+
+	//Tries to remove the virus also from the bloodstream (only for human-like lifeforms).
+	if(istype(mob, /mob/living/carbon/human))
+		var/mob/living/carbon/human/H = mob
+		H.cure_virus(uniqueID)
+
+	if (mob_gains_antigens)
 		mob.antibodies |= antigen
 
 	BITSET(mob.hud_updateflag, STATUS_HUD)
@@ -143,9 +150,8 @@ LEGACY_RECORD_STRUCTURE(virus_records, virus_record)
 
 	effects += get_random_virus2_effect(effect_stage, badness, exclude)
 
-	if (prob(5))
-		antigen = list(pick(ALL_ANTIGENS))
-		antigen |= pick(ALL_ANTIGENS)
+	antigen = list(pick(ALL_ANTIGENS))
+	antigen |= pick(ALL_ANTIGENS)
 
 	if (prob(5) && all_species.len)
 		affected_species = get_infectable_species()

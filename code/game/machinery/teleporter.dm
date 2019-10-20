@@ -3,7 +3,6 @@
 	desc = "Used to control a linked teleportation hub and station."
 	icon_keyboard = "teleport_key"
 	icon_screen = "teleport"
-	circuit = /obj/item/weapon/circuitboard/teleporter
 	var/obj/machinery/teleport/station/station = null
 	var/obj/machinery/teleport/hub/hub = null
 	var/obj/item/locked = null
@@ -93,19 +92,18 @@
 
 	return
 
-/obj/machinery/teleport/station/attack_ai(var/mob/user)
-	attack_hand(user)
-
-/obj/machinery/computer/teleporter/attack_hand(var/mob/user)
-	if(..()) return
-
-	/* Ghosts can't use this one because it's a direct selection */
-	if(isobserver(user)) return
+/obj/machinery/computer/teleporter/interface_interact(var/mob/user)
+	/* Run full check because it's a direct selection */
+	if(!CanInteract(user, DefaultTopicState()))
+		return FALSE
 
 	var/list/L = list()
 	var/list/areaindex = list()
 
+	. = TRUE
 	for(var/obj/item/device/radio/beacon/R in world)
+		if(!R.functioning)
+			continue
 		var/turf/T = get_turf(R)
 		if (!T)
 			continue
@@ -141,8 +139,8 @@
 	var/desc = input("Please select a location to lock in.", "Locking Computer") in L|null
 	if(!desc)
 		return
-	if(get_dist(src, usr) > 1 && !issilicon(usr))
-		return
+	if(!CanInteract(user, DefaultTopicState()))
+		return FALSE
 	set_target(L[desc])
 	for(var/mob/O in hearers(src, null))
 		O.show_message("<span class='notice'>Locked In</span>", 2)
@@ -199,10 +197,9 @@
 
 /obj/machinery/teleport/hub
 	name = "teleporter hub"
-	desc = "It's the hub of a teleporting machine."
+	desc = "The teleporter hub handles all of the impossibly complex busywork required in instant matter transmission."
 	icon_state = "tele0"
 	dir = 4
-	use_power = 1
 	idle_power_usage = 10
 	active_power_usage = 2000
 	var/obj/machinery/computer/teleporter/com
@@ -216,8 +213,7 @@
 	spawn()
 		if (src.icon_state == "tele1")
 			teleport(M)
-			use_power(5000)
-	return
+			use_power_oneoff(5000)
 
 /obj/machinery/teleport/hub/proc/teleport(atom/movable/M as mob|obj)
 	do_teleport(M, com.locked)
@@ -231,12 +227,11 @@
 	return ..()
 
 /obj/machinery/teleport/station
-	name = "station"
-	desc = "It's the station thingy of a teleport thingy." //seriously, wtf.
+	name = "projector"
+	desc = "This machine is capable of projecting a miniature wormhole leading directly to its provided target."
 	icon_state = "controller"
 	dir = 4
 	var/engaged = 0
-	use_power = 1
 	idle_power_usage = 10
 	active_power_usage = 2000
 	var/obj/machinery/computer/teleporter/com
@@ -250,15 +245,14 @@
 /obj/machinery/teleport/station/attackby(var/obj/item/weapon/W, var/mob/user)
 	attack_hand(user)
 
-/obj/machinery/teleport/station/attack_ai(var/mob/user)
-	attack_hand(user)
-
-/obj/machinery/teleport/station/attack_hand(var/mob/user)
-	. = ..()
+/obj/machinery/teleport/station/interface_interact(var/mob/user)
+	if(!CanInteract(user, DefaultTopicState()))
+		return FALSE
 	if(engaged)
-		src.disengage()
+		disengage()
 	else
-		src.engage()
+		engage()
+	return TRUE
 
 /obj/machinery/teleport/station/proc/engage()
 	if(stat & (BROKEN|NOPOWER))
@@ -268,11 +262,17 @@
 		audible_message("<span class='warning'>Failure: Cannot authenticate locked on coordinates. Please reinstate coordinate matrix.</span>")
 		return
 
+	if(istype(com.locked, /obj/item/device/radio/beacon))
+		var/obj/item/device/radio/beacon/B = com.locked
+		if(!B.functioning)
+			audible_message("<span class='warning'>Failure: Unable to establish connection to provided coordinates. Please reinstate coordinate matrix.</span>")
+			return
+
 	if (hub)
 		hub.icon_state = "tele1"
-		use_power(5000)
-		update_use_power(2)
-		hub.update_use_power(2)
+		use_power_oneoff(5000)
+		update_use_power(POWER_USE_ACTIVE)
+		hub.update_use_power(POWER_USE_ACTIVE)
 		audible_message("<span class='notice'>Teleporter engaged!</span>")
 	src.engaged = 1
 	return
@@ -283,8 +283,8 @@
 
 	if (hub)
 		hub.icon_state = "tele0"
-		hub.update_use_power(1)
-		update_use_power(1)
+		hub.update_use_power(POWER_USE_IDLE)
+		update_use_power(POWER_USE_IDLE)
 		audible_message("<span class='notice'>Teleporter disengaged!</span>")
 	src.engaged = 0
 	return
@@ -300,7 +300,7 @@
 	if (engaged && (stat & NOPOWER))
 		disengage()
 
-/obj/machinery/teleport/station/update_icon()
+/obj/machinery/teleport/station/on_update_icon()
 	if(stat & NOPOWER)
 		icon_state = "controller-p"
 	else

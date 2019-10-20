@@ -22,6 +22,8 @@
 		skipface = head.flags_inv & HIDEFACE
 
 	if(wear_mask)
+		skipeyes |= wear_mask.flags_inv & HIDEEYES
+		skipears |= wear_mask.flags_inv & HIDEEARS
 		skipface |= wear_mask.flags_inv & HIDEFACE
 
 	//no accuately spotting headsets from across the room.
@@ -49,7 +51,8 @@
 		if(is_synth && species.cyborg_noun)
 			species_name += "[species.cyborg_noun] "
 		species_name += "[species.name]"
-		msg += ", <b><font color='[species.get_flesh_colour(src)]'>\a [species_name]!</font></b>"
+		msg += ", <b><font color='[species.get_flesh_colour(src)]'>\a [species_name]!</font></b>[(user.can_use_codex() && SScodex.get_codex_entry(get_codex_value())) ?  SPAN_NOTICE(" \[<a href='?src=\ref[SScodex];show_examined_info=\ref[src];show_to=\ref[user]'>?</a>\]") : ""]"
+
 	var/extra_species_text = species.get_additional_examine_text(src)
 	if(extra_species_text)
 		msg += "[extra_species_text]<br>"
@@ -231,7 +234,7 @@
 		else
 			if(E.is_stump())
 				wound_flavor_text[E.name] += "<b>[T.He] [T.has] a stump where [T.his] [organ_descriptor] should be.</b>\n"
-				if(E.wounds.len && E.parent)
+				if(LAZYLEN(E.wounds) && E.parent)
 					wound_flavor_text[E.name] += "[T.He] [T.has] [E.get_wounds_desc()] on [T.his] [E.parent.name].<br>"
 			else
 				if(!is_synth && BP_IS_ROBOTIC(E) && (E.parent && !BP_IS_ROBOTIC(E.parent) && !BP_IS_ASSISTED(E.parent)))
@@ -247,7 +250,7 @@
 
 		for(var/datum/wound/wound in E.wounds)
 			var/list/embedlist = wound.embedded_objects
-			if(embedlist.len)
+			if(LAZYLEN(embedlist))
 				shown_objects += embedlist
 				var/parsedembed[0]
 				for(var/obj/embedded in embedlist)
@@ -309,6 +312,11 @@
 
 
 	if(print_flavor_text()) msg += "[print_flavor_text()]\n"
+
+	if(mind && user.mind && name == real_name)
+		var/list/relations = matchmaker.get_relationships_between(user.mind, mind, TRUE)
+		if(length(relations))
+			msg += "<br><span class='notice'>You know them. <a href='byond://?src=\ref[src];show_relations=1'>More...</a></span><br>"
 
 	msg += "*---------*</span><br>"
 	msg += applying_pressure

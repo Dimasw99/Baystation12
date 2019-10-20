@@ -74,7 +74,7 @@
 	return
 
 /obj/item/toy/water_balloon/throw_impact(atom/hit_atom)
-	if(src.reagents.total_volume >= 1)
+	if(reagents && reagents.total_volume >= 1)
 		src.visible_message("<span class='warning'>\The [src] bursts!</span>","You hear a pop and a splash.")
 		src.reagents.touch_turf(get_turf(hit_atom))
 		for(var/atom/A in get_turf(hit_atom))
@@ -85,7 +85,7 @@
 				qdel(src)
 	return
 
-/obj/item/toy/water_balloon/update_icon()
+/obj/item/toy/water_balloon/on_update_icon()
 	if(src.reagents.total_volume >= 1)
 		icon_state = "waterballoon"
 		item_state = "balloon"
@@ -95,7 +95,7 @@
 
 /obj/item/toy/balloon
 	name = "\improper 'criminal' balloon"
-	desc = "FUK NT!11!"
+	desc = "FUK CAPITALISM!11!"
 	throwforce = 0
 	throw_speed = 4
 	throw_range = 20
@@ -111,7 +111,7 @@
 
 /obj/item/toy/balloon/nanotrasen
 	name = "\improper 'motivational' balloon"
-	desc = "Man, I love NanoTrasen soooo much. I use only NT products. You have NO idea."
+	desc = "Man, I love Profit soooo much. I use only Brand Name products. You have NO idea."
 	icon_state = "ntballoon"
 	item_state = "ntballoon"
 
@@ -141,7 +141,7 @@
 /obj/item/toy/crossbow
 	name = "foam dart crossbow"
 	desc = "A weapon favored by many overactive children. Ages 8 and up."
-	icon = 'icons/obj/gun.dmi'
+	icon = 'icons/obj/guns/energy_crossbow.dmi'
 	icon_state = "crossbow"
 	item_state = "crossbow"
 	item_icons = list(
@@ -360,6 +360,7 @@
 	icon = 'icons/obj/toy.dmi'
 	icon_state = "ripleytoy"
 	var/cooldown = 0
+	w_class = ITEM_SIZE_TINY
 
 //all credit to skasi for toy mech fun ideas
 /obj/item/toy/prize/attack_self(mob/user as mob)
@@ -377,58 +378,58 @@
 			return
 	..()
 
-/obj/item/toy/prize/ripley
+/obj/item/toy/prize/powerloader
 	name = "toy ripley"
-	desc = "Mini-Mecha action figure! Collect them all! 1/11."
+	desc = "Mini-mech action figure! Collect them all! 1/11."
 
 /obj/item/toy/prize/fireripley
 	name = "toy firefighting ripley"
-	desc = "Mini-Mecha action figure! Collect them all! 2/11."
+	desc = "Mini-mech action figure! Collect them all! 2/11."
 	icon_state = "fireripleytoy"
 
 /obj/item/toy/prize/deathripley
 	name = "toy deathsquad ripley"
-	desc = "Mini-Mecha action figure! Collect them all! 3/11."
+	desc = "Mini-mech action figure! Collect them all! 3/11."
 	icon_state = "deathripleytoy"
 
 /obj/item/toy/prize/gygax
 	name = "toy gygax"
-	desc = "Mini-Mecha action figure! Collect them all! 4/11."
+	desc = "Mini-mech action figure! Collect them all! 4/11."
 	icon_state = "gygaxtoy"
 
 /obj/item/toy/prize/durand
 	name = "toy durand"
-	desc = "Mini-Mecha action figure! Collect them all! 5/11."
+	desc = "Mini-mech action figure! Collect them all! 5/11."
 	icon_state = "durandprize"
 
 /obj/item/toy/prize/honk
 	name = "toy H.O.N.K."
-	desc = "Mini-Mecha action figure! Collect them all! 6/11."
+	desc = "Mini-mech action figure! Collect them all! 6/11."
 	icon_state = "honkprize"
 
 /obj/item/toy/prize/marauder
 	name = "toy marauder"
-	desc = "Mini-Mecha action figure! Collect them all! 7/11."
+	desc = "Mini-mech action figure! Collect them all! 7/11."
 	icon_state = "marauderprize"
 
 /obj/item/toy/prize/seraph
 	name = "toy seraph"
-	desc = "Mini-Mecha action figure! Collect them all! 8/11."
+	desc = "Mini-mech action figure! Collect them all! 8/11."
 	icon_state = "seraphprize"
 
 /obj/item/toy/prize/mauler
 	name = "toy mauler"
-	desc = "Mini-Mecha action figure! Collect them all! 9/11."
+	desc = "Mini-mech action figure! Collect them all! 9/11."
 	icon_state = "maulerprize"
 
 /obj/item/toy/prize/odysseus
 	name = "toy odysseus"
-	desc = "Mini-Mecha action figure! Collect them all! 10/11."
+	desc = "Mini-mech action figure! Collect them all! 10/11."
 	icon_state = "odysseusprize"
 
 /obj/item/toy/prize/phazon
 	name = "toy phazon"
-	desc = "Mini-Mecha action figure! Collect them all! 11/11."
+	desc = "Mini-mech action figure! Collect them all! 11/11."
 	icon_state = "phazonprize"
 
 /*
@@ -440,6 +441,7 @@
 	desc = "A \"Space Life\" brand... wait, what the hell is this thing? It seems to be requesting the sweet release of death."
 	icon_state = "assistant"
 	icon = 'icons/obj/toy.dmi'
+	w_class = ITEM_SIZE_TINY
 
 /obj/item/toy/figure/cmo
 	name = "Chief Medical Officer action figure"
@@ -497,8 +499,8 @@
 	icon_state = "chef"
 
 /obj/item/toy/figure/chemist
-	name = "Chemist action figure"
-	desc = "A \"Space Life\" brand Chemist action figure."
+	name = "Pharmacist action figure"
+	desc = "A \"Space Life\" brand Pharmacist action figure."
 	icon_state = "chemist"
 
 /obj/item/toy/figure/clown
@@ -587,8 +589,8 @@
 	icon_state = "wizard"
 
 /obj/item/toy/figure/rd
-	name = "Research Director action figure"
-	desc = "A \"Space Life\" brand Research Director action figure."
+	name = "Chief Science Officer action figure"
+	desc = "A \"Space Life\" brand Chief Science Officer action figure."
 	icon_state = "rd"
 
 /obj/item/toy/figure/roboticist
@@ -785,7 +787,7 @@
 	desc = "No bother to sink or swim when you can just float!"
 	icon_state = "inflatable"
 	item_state = "inflatable"
-	icon = 'icons/obj/clothing/belts.dmi'
+	icon = 'icons/obj/clothing/obj_belt.dmi'
 	slot_flags = SLOT_BELT
 
 /obj/item/weapon/marshalling_wand
@@ -859,7 +861,7 @@
 	var/on = 0
 	var/activation_sound = 'sound/effects/flashlight.ogg'
 
-/obj/item/toy/desk/update_icon()
+/obj/item/toy/desk/on_update_icon()
 	if(on)
 		icon_state = "[initial(icon_state)]-on"
 	else

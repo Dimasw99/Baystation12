@@ -34,6 +34,9 @@
 
 		return 0
 
+	if(!canUnEquip(W))
+		return 0
+
 	equip_to_slot(W, slot, redraw_mob) //This proc should not ever fail.
 	return 1
 
@@ -78,10 +81,13 @@ var/list/slot_equipment_priority = list( \
 
 //puts the item "W" into an appropriate slot in a human's inventory
 //returns 0 if it cannot, 1 if successful
-/mob/proc/equip_to_appropriate_slot(obj/item/W)
+/mob/proc/equip_to_appropriate_slot(obj/item/W, var/skip_store = 0)
 	if(!istype(W)) return 0
 
 	for(var/slot in slot_equipment_priority)
+		if(skip_store)
+			if(slot == slot_s_store || slot == slot_l_store || slot == slot_r_store)
+				continue
 		if(equip_to_slot_if_possible(W, slot, del_on_fail=0, disable_warning=1, redraw_mob=1))
 			return 1
 
@@ -209,7 +215,7 @@ var/list/slot_equipment_priority = list( \
 	if(!I) //If there's nothing to drop, the drop is automatically successful.
 		return 1
 	var/slot = get_inventory_slot(I)
-	if(!slot)
+	if(!slot && !istype(I.loc, /obj/item/rig_module))
 		return 1 //already unequipped, so success
 	return I.mob_can_unequip(src, slot)
 

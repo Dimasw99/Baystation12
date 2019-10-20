@@ -64,8 +64,8 @@
 
 /obj/item/weapon/contract/wizard/xray/contract_effect(mob/user as mob)
 	..()
-	if (!(XRAY in user.mutations))
-		user.mutations.Add(XRAY)
+	if (!(MUTATION_XRAY in user.mutations))
+		user.mutations.Add(MUTATION_XRAY)
 		user.set_sight(user.sight|SEE_MOBS|SEE_OBJS|SEE_TURFS)
 		user.set_see_in_dark(8)
 		user.set_see_invisible(SEE_INVISIBLE_LEVEL_TWO)
@@ -89,19 +89,6 @@
 	H.verbs += /mob/living/carbon/human/proc/remotesay
 	to_chat(H, "<span class='notice'>You expand your mind outwards.</span>")
 	return 1
-
-/obj/item/weapon/contract/wizard/tk
-	name = "telekinesis contract"
-	desc = "This contract makes your mind buzz. It promises to give you the ability to move things with your mind. At a price."
-	color = "#990033"
-
-/obj/item/weapon/contract/wizard/tk/contract_effect(mob/user as mob)
-	..()
-	if(!(TK in user.mutations))
-		user.mutations.Add(TK)
-		to_chat(user, "<span class='notice'>You feel your mind expanding!</span>")
-		return 1
-	return 0
 
 /obj/item/weapon/contract/boon
 	name = "boon contract"
@@ -131,7 +118,7 @@
 		return 1
 	else if(ispath(path,/obj))
 		new path(get_turf(user.loc))
-		playsound(get_turf(usr),'sound/effects/phasein.ogg',50,1)
+		playsound(get_turf(usr),'sound/magic/charge.ogg',50,1)
 		return 1
 
 /obj/item/weapon/contract/boon/wizard

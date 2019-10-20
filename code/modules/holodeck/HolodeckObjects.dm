@@ -6,6 +6,10 @@
 /turf/simulated/floor/holofloor
 	thermal_conductivity = 0
 
+// the new Diona Death Prevention Feature: gives an average amount of lumination
+/turf/simulated/floor/holofloor/get_lumcount(var/minlum = 0, var/maxlum = 1)
+	return 0.8
+
 /turf/simulated/floor/holofloor/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	return
 	// HOLOFLOOR DOES NOT GIVE A FUCK
@@ -42,6 +46,11 @@
 	icon_state = "dark"
 	initial_flooring = /decl/flooring/tiling/dark
 
+/turf/simulated/floor/holofloor/tiled/stone
+	name = "stone floor"
+	icon_state = "stone"
+	initial_flooring = /decl/flooring/tiling/stone
+
 /turf/simulated/floor/holofloor/lino
 	name = "lino"
 	icon = 'icons/turf/flooring/linoleum.dmi'
@@ -52,6 +61,7 @@
 	name = "wooden floor"
 	icon = 'icons/turf/flooring/wood.dmi'
 	icon_state = "wood"
+	color = WOOD_COLOR_CHOCOLATE
 	initial_flooring = /decl/flooring/wood
 
 /turf/simulated/floor/holofloor/grass
@@ -148,11 +158,7 @@
 
 	if(!istype(W) || W.item_flags & ITEM_FLAG_NO_BLUDGEON) return
 
-	if(istype(W, /obj/item/weapon/screwdriver))
-		to_chat(user, ("<span class='notice'>It's a holowindow, you can't unfasten it!</span>"))
-	else if(istype(W, /obj/item/weapon/crowbar) && reinf && state <= 1)
-		to_chat(user, ("<span class='notice'>It's a holowindow, you can't pry it!</span>"))
-	else if(istype(W, /obj/item/weapon/wrench) && !anchored && (!state || !reinf))
+	if(isScrewdriver(W) || isCrowbar(W) || isWrench(W))
 		to_chat(user, ("<span class='notice'>It's a holowindow, you can't dismantle it!</span>"))
 	else
 		if(W.damtype == BRUTE || W.damtype == BURN)
@@ -235,7 +241,7 @@
 	throw_range = 5
 	throwforce = 0
 	w_class = ITEM_SIZE_SMALL
-	atom_flags = ATOM_FLAG_NO_BLOOD
+	atom_flags = ATOM_FLAG_NO_TEMP_CHANGE | ATOM_FLAG_NO_BLOOD
 	base_parry_chance = 50
 	var/active = 0
 	var/item_color
@@ -307,7 +313,7 @@
 		if(istype(I, /obj/item/projectile))
 			return
 		if(prob(50))
-			I.loc = src.loc
+			I.dropInto(loc)
 			visible_message("<span class='notice'>Swish! \the [I] lands in \the [src].</span>", 3)
 		else
 			visible_message("<span class='warning'>\The [I] bounces off of \the [src]'s rim!</span>", 3)
@@ -345,7 +351,7 @@
 		if(istype(I, /obj/item/projectile))
 			return
 		if(prob(10))
-			I.forceMove(get_turf(src))
+			I.dropInto(loc)
 			visible_message("<span class='notice'>Swish! \the [I] gets caught in \the [src].</span>", 3)
 			return 0
 		else
@@ -363,7 +369,6 @@
 	var/eventstarted = 0
 
 	anchored = 1.0
-	use_power = 1
 	idle_power_usage = 2
 	active_power_usage = 6
 	power_channel = ENVIRON
@@ -379,22 +384,15 @@
 /obj/machinery/readybutton/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	to_chat(user, "The device is a solid button, there's nothing you can do with it!")
 
-/obj/machinery/readybutton/attack_hand(mob/user as mob)
-
-	if(user.stat || stat & (NOPOWER|BROKEN))
-		to_chat(user, "This device is not powered.")
-		return
-
-	if(!user.IsAdvancedToolUser())
-		return 0
-
-	currentarea = get_area(src.loc)
+/obj/machinery/readybutton/physical_attack_hand(mob/user)
+	currentarea = get_area(src)
 	if(!currentarea)
 		qdel(src)
+		return TRUE
 
 	if(eventstarted)
-		to_chat(usr, "The event has already begun!")
-		return
+		to_chat(user, "The event has already begun!")
+		return TRUE
 
 	ready = !ready
 
@@ -409,8 +407,9 @@
 
 	if(numbuttons == numready)
 		begin_event()
+	return TRUE
 
-/obj/machinery/readybutton/update_icon()
+/obj/machinery/readybutton/on_update_icon()
 	if(ready)
 		icon_state = "auth_on"
 	else
@@ -438,13 +437,19 @@
 	meat_amount = 0
 	meat_type = null
 
+/mob/living/simple_animal/hostile/carp/holodeck/carp_randomify()
+	return
+
+/mob/living/simple_animal/hostile/carp/holodeck/on_update_icon()
+	return
+
 /mob/living/simple_animal/hostile/carp/holodeck/New()
 	..()
 	set_light(0.5, 0.1, 2) //hologram lighting
 
 /mob/living/simple_animal/hostile/carp/holodeck/proc/set_safety(var/safe)
 	if (safe)
-		faction = "neutral"
+		faction = MOB_FACTION_NEUTRAL
 		melee_damage_lower = 0
 		melee_damage_upper = 0
 		environment_smash = 0

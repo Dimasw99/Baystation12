@@ -59,10 +59,9 @@
 
 //If this hits 0 then they decide to up and leave.
 /datum/trader/proc/tick()
-	spawn(0)
-		add_to_pool(trading_items, possible_trading_items, 200)
-		add_to_pool(wanted_items, possible_wanted_items, 50)
-		remove_from_pool(possible_trading_items, 9) //We want the stock to change every so often, so we make it so that they have roughly 10~11 ish items max
+	add_to_pool(trading_items, possible_trading_items, 200)
+	add_to_pool(wanted_items, possible_wanted_items, 50)
+	remove_from_pool(possible_trading_items, 9) //We want the stock to change every so often, so we make it so that they have roughly 10~11 ish items max
 	return 1
 
 /datum/trader/proc/remove_from_pool(var/list/pool, var/chance_per_item)
@@ -98,7 +97,7 @@
 	if(possible.len)
 		var/picked = pick(possible)
 		var/atom/A = picked
-		if(initial(A.name) in list("object", "item","weapon", "structure", "machinery", "Mecha", "organ", "snack")) //weed out a few of the common bad types. Reason we don't check types specifically is that (hopefully) further bad subtypes don't set their name up and are similar.
+		if(initial(A.name) in list("object", "item","weapon", "structure", "machinery", "exosuit", "organ", "snack")) //weed out a few of the common bad types. Reason we don't check types specifically is that (hopefully) further bad subtypes don't set their name up and are similar.
 			return
 		return picked
 
@@ -141,7 +140,7 @@
 	. = get_value(item)
 	if(is_wanted)
 		. *= want_multiplier
-	. *= 1 - (margin - 1) * skill_curve(skill) //Trader will underpay at lower skill.
+	. *= max(1 - (margin - 1) * skill_curve(skill), 0.1) //Trader will underpay at lower skill.
 
 /datum/trader/proc/offer_money_for_trade(var/trade_num, var/money_amount, skill = SKILL_MAX)
 	if(!(trade_flags & TRADER_MONEY))
@@ -227,9 +226,6 @@
 			if(istype(offer,/mob))
 				var/text = mob_transfer_message
 				to_chat(offer, replacetext(text, "ORIGIN", origin))
-			if(istype(offer, /obj/mecha))
-				var/obj/mecha/M = offer
-				M.wreckage = null //So they don't ruin the illusion
 			qdel(offer)
 
 	var/type = trading_items[num]

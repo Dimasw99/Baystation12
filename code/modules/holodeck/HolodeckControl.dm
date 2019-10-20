@@ -3,13 +3,10 @@
 	desc = "A computer used to control a nearby holodeck."
 	icon_keyboard = "tech_key"
 	icon_screen = "holocontrol"
-	req_access = list(access_bridge)
+	var/lock_access = list(access_bridge)
 	var/islocked = 0
 
-	use_power = 1
 	active_power_usage = 8000 //8kW for the scenery + 500W per holoitem
-
-	circuit = /obj/item/weapon/circuitboard/holodeckcontrol
 
 	var/item_power_usage = 500
 
@@ -35,13 +32,11 @@
 	if (programs_list_id in GLOB.using_map.holodeck_restricted_programs)
 		restricted_programs |= GLOB.using_map.holodeck_restricted_programs[programs_list_id]
 
-/obj/machinery/computer/HolodeckControl/attack_ai(var/mob/user as mob)
-	return src.attack_hand(user)
+/obj/machinery/computer/HolodeckControl/interface_interact(var/mob/user)
+	interact(user)
+	return TRUE
 
-/obj/machinery/computer/HolodeckControl/attack_hand(var/mob/user as mob)
-	if(..())
-		return 1
-
+/obj/machinery/computer/HolodeckControl/interact(var/mob/user)
 	user.set_machine(src)
 	var/dat
 
@@ -127,11 +122,9 @@
 			safety_disabled = !safety_disabled
 			update_projections()
 			if(safety_disabled)
-				message_admins("[key_name_admin(usr)] overrode the holodeck's safeties")
-				log_game("[key_name(usr)] overrided the holodeck's safeties")
+				log_and_message_admins("overrode the holodeck's safeties")
 			else
-				message_admins("[key_name_admin(usr)] restored the holodeck's safeties")
-				log_game("[key_name(usr)] restored the holodeck's safeties")
+				log_and_message_admins("restored the holodeck's safeties")
 
 		else if(href_list["gravity"])
 			toggleGravity(linkedholodeck)
@@ -201,13 +194,13 @@
 	if(!..())
 		return
 	if(active)
-		use_power(item_power_usage * (holographic_objs.len + holographic_mobs.len))
+		use_power_oneoff(item_power_usage * (holographic_objs.len + holographic_mobs.len))
 
 		if(!checkInteg(linkedholodeck))
 			damaged = 1
 			loadProgram(GLOB.using_map.holodeck_programs["turnoff"], 0)
 			active = 0
-			use_power = 1
+			update_use_power(POWER_USE_IDLE)
 			for(var/mob/M in range(10,src))
 				M.show_message("The holodeck overloads!")
 
@@ -249,7 +242,7 @@
 			linkedholodeck.gravitychange(1)
 
 		active = 0
-		use_power = 1
+		update_use_power(POWER_USE_IDLE)
 
 
 /obj/machinery/computer/HolodeckControl/proc/loadProgram(var/datum/holodeck_program/HP, var/check_delay = 1)
@@ -270,7 +263,7 @@
 
 	last_change = world.time
 	active = 1
-	use_power = 2
+	update_use_power(POWER_USE_ACTIVE)
 
 	for(var/item in holographic_objs)
 		derez(item)
@@ -330,7 +323,7 @@
 
 	last_gravity_change = world.time
 	active = 1
-	use_power = 1
+	update_use_power(POWER_USE_IDLE)
 
 	if(A.has_gravity)
 		A.gravitychange(0,A)
@@ -345,7 +338,7 @@
 		linkedholodeck.gravitychange(1,linkedholodeck)
 
 	active = 0
-	use_power = 1
+	update_use_power(POWER_USE_IDLE)
 
 // Locking system
 
@@ -359,4 +352,4 @@
 		return 1
 
 /obj/machinery/computer/HolodeckControl/proc/cantogglelock(var/mob/user)
-	return allowed(user)
+	return has_access(lock_access, user.GetAccess())

@@ -16,6 +16,7 @@
 	size = 12
 	usage_flags = PROGRAM_CONSOLE | PROGRAM_LAPTOP
 	network_destination = "long-range communication array"
+	category = PROG_COMMAND
 	var/datum/comm_message_listener/message_core = new
 
 /datum/computer_file/program/comm/clone()
@@ -45,11 +46,11 @@
 	var/list/data = host.initial_data()
 
 	if(program)
-		data["emagged"] = program.computer_emagged
 		data["net_comms"] = !!program.get_signal(NTNET_COMMUNICATION) //Double !! is needed to get 1 or 0 answer
 		data["net_syscont"] = !!program.get_signal(NTNET_SYSTEMCONTROL)
 		if(program.computer)
-			data["have_printer"] = !!program.computer.nano_printer
+			data["emagged"] = program.computer.emagged()
+			data["have_printer"] =  program.computer.has_component(PART_PRINTER)
 		else
 			data["have_printer"] = 0
 	else
@@ -89,6 +90,8 @@
 	var/list/processed_evac_options = list()
 	if(!isnull(evacuation_controller))
 		for (var/datum/evacuation_option/EO in evacuation_controller.available_evac_options())
+			if(EO.abandon_ship)
+				continue
 			var/list/option = list()
 			option["option_text"] = EO.option_text
 			option["option_target"] = EO.option_target
@@ -137,10 +140,11 @@
 				if(announcment_cooldown)
 					to_chat(usr, "Please allow at least one minute to pass between announcements")
 					return TRUE
-				var/input = input(usr, "Please write a message to announce to the [station_name()].", "Priority Announcement") as null|text
+				var/input = input(usr, "Please write a message to announce to the [station_name()].", "Priority Announcement") as null|message
 				if(!input || !can_still_topic())
 					return 1
-				crew_announcement.Announce(input)
+				var/affected_zlevels = GetConnectedZlevels(get_host_z())
+				crew_announcement.Announce(input, zlevels = affected_zlevels)
 				announcment_cooldown = 1
 				spawn(600)//One minute cooldown
 					announcment_cooldown = 0
@@ -148,7 +152,7 @@
 			. = 1
 			if(href_list["target"] == "emagged")
 				if(program)
-					if(is_autenthicated(user) && program.computer_emagged && !issilicon(usr) && ntn_comm)
+					if(is_autenthicated(user) && program.computer.emagged() && !issilicon(usr) && ntn_comm)
 						if(centcomm_message_cooldown)
 							to_chat(usr, "<span class='warning'>Arrays recycling. Please stand by.</span>")
 							SSnano.update_uis(src)
@@ -220,7 +224,7 @@
 					var/confirm = alert("Are you sure you want to change the alert level to [target_level.name]?", name, "No", "Yes")
 					if(confirm == "Yes" && can_still_topic())
 						if(security_state.set_security_level(target_level))
-							feedback_inc(target_level.type,1)
+							SSstatistics.add_field(target_level.type,1)
 			else
 				to_chat(usr, "You press the button, but a red light flashes and nothing happens.") //This should never happen
 
@@ -241,11 +245,14 @@
 		if("printmessage")
 			. = 1
 			if(is_autenthicated(user) && ntn_comm)
-				if(program && program.computer && program.computer.nano_printer)
-					if(!program.computer.nano_printer.print_text(current_viewing_message["contents"],current_viewing_message["title"]))
-						to_chat(usr, "<span class='notice'>Hardware Error: Printer was unable to print the selected file.</span>")
-					else
-						program.computer.visible_message("<span class='notice'>\The [program.computer] prints out a paper.</span>")
+				if(!program.computer.print_paper(current_viewing_message["contents"],current_viewing_message["title"]))
+					to_chat(usr, "<span class='notice'>Hardware Error: Printer was unable to print the selected file.</span>")
+		if("unbolt_doors")
+			GLOB.using_map.unbolt_saferooms()
+			to_chat(usr, "<span class='notice'>The console beeps, confirming the signal was sent to have the saferooms unbolted.</span>")
+		if("bolt_doors")
+			GLOB.using_map.bolt_saferooms()
+			to_chat(usr, "<span class='notice'>The console beeps, confirming the signal was sent to have the saferooms bolted.</span>")
 
 #undef STATE_DEFAULT
 #undef STATE_MESSAGELIST
@@ -309,12 +316,11 @@ var/last_message_id = 0
 	frequency.post_signal(src, status_signal)
 
 /proc/cancel_call_proc(var/mob/user)
-	if (!ticker || !evacuation_controller)
+	if (!evacuation_controller)
 		return
 
 	if(evacuation_controller.cancel_evacuation())
-		log_game("[key_name(user)] has cancelled the evacuation.")
-		message_admins("[key_name_admin(user)] has cancelled the evacuation.", 1)
+		log_and_message_admins("has cancelled the evacuation.", user)
 
 	return
 
@@ -326,7 +332,7 @@ var/last_message_id = 0
 	return 0
 
 /proc/call_shuttle_proc(var/mob/user, var/emergency)
-	if (!ticker || !evacuation_controller)
+	if (!evacuation_controller)
 		return
 
 	if(isnull(emergency))
@@ -356,7 +362,7 @@ var/last_message_id = 0
 
 /proc/init_autotransfer()
 
-	if (!ticker || !evacuation_controller)
+	if (!evacuation_controller)
 		return
 
 	. = evacuation_controller.call_evacuation(null, _emergency_evac = FALSE, autotransfer = TRUE)

@@ -24,9 +24,6 @@
  *
  */
 
-
-#define MAX_UNIT_TEST_RUN_TIME 2 MINUTES
-
 var/all_unit_tests_passed = 1
 var/failed_unit_tests = 0
 var/skipped_unit_tests = 0
@@ -55,8 +52,9 @@ var/ascii_reset = "[ascii_esc]\[0m"
 
 datum/unit_test
 	var/name = "template - should not be ran."
-	var/disabled = 0        // If we want to keep a unit test in the codebase but not run it for some reason.
-	var/async = 0           // If the check can be left to do it's own thing, you must define a check_result() proc if you use this.
+	var/template        // Treat the unit test as a template if its type is the same as the value of this var
+	var/disabled = 0    // If we want to keep a unit test in the codebase but not run it for some reason.
+	var/async = 0       // If the check can be left to do it's own thing, you must define a check_result() proc if you use this.
 	var/reported = 0	// If it's reported a success or failure.  Any tests that have not are assumed to be failures.
 	var/why_disabled = "No reason set."   // If we disable a unit test we will display why so it reminds us to check back on it later.
 
@@ -85,10 +83,10 @@ datum/unit_test/proc/skip(var/message)
 	log_unit_test("[ascii_yellow]--- SKIPPED --- \[[name]\]: [message][ascii_reset]")
 
 datum/unit_test/proc/start_test()
-	fail("No test proc.")
+	fail("No test proc - [type]")
 
 datum/unit_test/proc/check_result()
-	fail("No check results proc")
+	fail("No check results proc - [type]")
 	return 1
 
 datum/unit_test/proc/get_safe_turf()
@@ -116,13 +114,12 @@ proc/load_unit_test_changes()
  */
 
 /proc/get_test_datums()
-	var/list/tests = list()
-	for(var/test in typesof(/datum/unit_test))
+	. = list()
+	for(var/test in subtypesof(/datum/unit_test))
 		var/datum/unit_test/d = test
-		if(findtext(initial(d.name), "template"))
+		if(test == initial(d.template))
 			continue
-		tests += d
-	return tests
+		. += d
 
 /proc/do_unit_test(datum/unit_test/test, end_time, skip_disabled_tests = TRUE)
 	if(test.disabled && skip_disabled_tests)
@@ -176,105 +173,10 @@ proc/load_unit_test_changes()
 			sleep(20)
 	unit_test_final_message()
 
+/obj/effect/landmark/test/safe_turf
+	name = "safe_turf" // At creation, landmark tags are set to: "landmark*[name]"
+	desc = "A safe turf should be an as large block as possible of livable, passable turfs, preferably at least 3x3 with the marked turf as the center"
 
-#ifdef UNIT_TEST
-
-SUBSYSTEM_DEF(unit_tests)
-	name = "Unit Tests"
-	wait = 2 SECONDS
-	init_order = SS_INIT_UNIT_TESTS
-	runlevels = (RUNLEVELS_DEFAULT | RUNLEVEL_LOBBY)
-	var/list/queue = list()
-	var/list/async_tests = list()
-	var/list/current_async
-	var/stage = 0
-	var/end_unit_tests
-
-/datum/controller/subsystem/unit_tests/Initialize(timeofday)
-	#ifndef UNIT_TEST_COLOURED
-	if(world.system_type != UNIX) // Not a Unix/Linux/etc system, we probably don't want to print color escapes (unless UNIT_TEST_COLOURED was defined to force escapes)
-		ascii_esc = ""
-		ascii_red = ""
-		ascii_green = ""
-		ascii_yellow = ""
-		ascii_reset = ""
-	#endif
-	log_unit_test("Initializing Unit Testing")
-	//
-	//Start the Round.
-	//
-	world.save_mode("extended")
-	for(var/test_datum_type in get_test_datums())
-		queue += new test_datum_type
-	log_unit_test("[queue.len] unit tests loaded.")
-	. = ..()
-
-/datum/controller/subsystem/unit_tests/proc/start_game()
-	if(Master.current_runlevel < RUNLEVEL_LOBBY)
-		return //Have to wait for the old Master.
-	log_unit_test("Master process setup.")
-
-	if (ticker.current_state == GAME_STATE_PREGAME)
-		ticker.current_state = GAME_STATE_SETTING_UP
-		Master.SetRunLevel(RUNLEVEL_SETUP)
-		stage++
-		log_unit_test("Round has been started.  Waiting 10 seconds to start tests.")
-		postpone(5)
-	else
-		log_unit_test("Unable to start testing; ticker.current_state=[ticker.current_state]!")
-		del world
-
-/datum/controller/subsystem/unit_tests/proc/handle_tests()
-	var/list/curr = queue
-	while (curr.len)
-		var/datum/unit_test/test = curr[curr.len]
-		curr.len--
-		if(do_unit_test(test, end_unit_tests) && test.async)
-			async_tests += test
-		total_unit_tests++
-		if (MC_TICK_CHECK)
-			return
-	if (!curr.len)
-		stage++
-
-/datum/controller/subsystem/unit_tests/proc/handle_async(resumed = 0)
-	if (!resumed)
-		current_async = async_tests.Copy()
-
-	var/list/async = current_async
-	while (async.len)
-		var/datum/unit_test/test = current_async[current_async.len]
-		current_async.len--
-		if(check_unit_test(test, end_unit_tests))
-			async_tests -= test
-		if (MC_TICK_CHECK)
-			return
-	if (!async.len)
-		stage++
-
-/datum/controller/subsystem/unit_tests/fire(resumed = 0)
-	switch (stage)
-		if (0)
-			stage ++
-			log_unit_test("Awaiting the master process...")
-
-		if (1)
-			start_game()
-
-		if (2)	// wait a moment
-			stage++
-			log_unit_test("Testing Started.")
-			end_unit_tests = world.time + MAX_UNIT_TEST_RUN_TIME
-
-		if (3)	// do normal tests
-			handle_tests()
-
-		if (4)
-			handle_async(resumed)
-
-		if (5)	// Finalization.
-			unit_test_final_message()
-			log_unit_test("Caught [GLOB.total_runtimes] Runtime\s.")
-			del world
-#endif
-#undef MAX_UNIT_TEST_RUN_TIME
+/obj/effect/landmark/test/space_turf
+	name = "space_turf"
+	desc = "A space turf should be an as large block as possible of space, preferably at least 3x3 with the marked turf as the center"

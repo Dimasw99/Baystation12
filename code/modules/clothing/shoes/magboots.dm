@@ -3,7 +3,6 @@
 	desc = "Magnetic boots, often used during extravehicular activity to ensure the user remains safely attached to the vehicle. They're large enough to be worn over other footwear."
 	name = "magboots"
 	icon_state = "magboots0"
-	can_hold_knife = 1
 	species_restricted = null
 	force = 3
 	overshoes = 1
@@ -79,7 +78,7 @@
 	var/mob/living/carbon/human/H = wearer
 	if(shoes && istype(H))
 		if(!H.equip_to_slot_if_possible(shoes, slot_shoes))
-			shoes.forceMove(get_turf(src))
+			shoes.dropInto(loc)
 		src.shoes = null
 	wearer.update_floating()
 	wearer = null

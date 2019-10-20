@@ -3,7 +3,6 @@
 /obj/item/weapon/gripper
 	name = "magnetic gripper"
 	desc = "A simple grasping tool specialized in construction and engineering work."
-	description_info = "Click an item to pick it up with your gripper. Use it as you would normally use anything in your hand. The Drop Item verb will allow you to release the item."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "gripper"
 
@@ -21,12 +20,13 @@
 		/obj/item/frame,
 		/obj/item/weapon/camera_assembly,
 		/obj/item/weapon/tank,
-		/obj/item/weapon/circuitboard,
-		/obj/item/weapon/smes_coil,
-		/obj/item/weapon/computer_hardware,
+		/obj/item/weapon/stock_parts/circuitboard,
+		/obj/item/weapon/stock_parts/smes_coil,
+		/obj/item/weapon/stock_parts/computer,
 		/obj/item/weapon/fuel_assembly,
 		/obj/item/stack/material/deuterium,
-		/obj/item/stack/material/tritium
+		/obj/item/stack/material/tritium,
+		/obj/item/stack/tile
 		)
 
 	var/obj/item/wrapped = null // Item currently being held.
@@ -41,7 +41,7 @@
 	can_hold = list(
 	/obj/item/weapon/cell,
 	/obj/item/weapon/stock_parts,
-	/obj/item/weapon/circuitboard/miningdrill
+	/obj/item/weapon/stock_parts/circuitboard/miningdrill
 	)
 
 /obj/item/weapon/gripper/clerical
@@ -49,7 +49,7 @@
 	desc = "A simple grasping tool for clerical work."
 
 	can_hold = list(
-		/obj/item/weapon/clipboard,
+		/obj/item/weapon/material/clipboard,
 		/obj/item/weapon/paper,
 		/obj/item/weapon/paper_bundle,
 		/obj/item/weapon/card/id,
@@ -66,6 +66,7 @@
 		/obj/item/weapon/reagent_containers/glass,
 		/obj/item/weapon/reagent_containers/pill,
 		/obj/item/weapon/reagent_containers/ivbag,
+		/obj/item/stack/material/phoron,
 		/obj/item/weapon/storage/pill_bottle,
 		)
 
@@ -84,12 +85,11 @@
 		/obj/item/organ/internal/brain,
 		/obj/item/organ/internal/posibrain,
 		/obj/item/stack/cable_coil,
-		/obj/item/weapon/circuitboard,
+		/obj/item/weapon/stock_parts/circuitboard,
 		/obj/item/slime_extract,
 		/obj/item/weapon/reagent_containers/glass,
 		/obj/item/weapon/reagent_containers/food/snacks/monkeycube,
-		/obj/item/mecha_parts,
-		/obj/item/weapon/computer_hardware,
+		/obj/item/weapon/stock_parts/computer,
 		/obj/item/device/transfer_valve,
 		/obj/item/device/assembly/signaler,
 		/obj/item/device/assembly/timer,
@@ -98,18 +98,29 @@
 		/obj/item/weapon/tank
 		)
 
+/obj/item/weapon/gripper/cultivator
+	name = "cultivator gripper"
+	icon_state = "gripper"
+	desc = "A simple grasping tool used to perform tasks in the xenobiology division, such as handling plant samples and disks."
+	can_hold = list(
+		/obj/item/weapon/reagent_containers/glass,
+		/obj/item/seeds,
+		/obj/item/weapon/grown,
+		/obj/item/slime_extract,
+		/obj/item/weapon/disk/botany
+	)
+
 /obj/item/weapon/gripper/service //Used to handle food, drinks, and seeds.
 	name = "service gripper"
 	icon_state = "gripper"
 	desc = "A simple grasping tool used to perform tasks in the service sector, such as handling food, drinks, and seeds."
-
 	can_hold = list(
 		/obj/item/weapon/reagent_containers/glass,
 		/obj/item/weapon/reagent_containers/food,
 		/obj/item/seeds,
 		/obj/item/weapon/grown,
 		/obj/item/weapon/glass_extra
-		)
+	)
 
 /obj/item/weapon/gripper/organ //Used to handle organs.
 	name = "organ gripper"
@@ -146,16 +157,15 @@
 		return wrapped.attack_self(user)
 	return ..()
 
-/obj/item/weapon/gripper/verb/drop_item()
+/obj/item/weapon/gripper/verb/drop_gripped_item()
 
-	set name = "Drop Item"
+	set name = "Drop Gripped Item"
 	set desc = "Release an item from your magnetic gripper."
 	set category = "Silicon Commands"
-
 	if(!wrapped)
 		//There's some weirdness with items being lost inside the arm. Trying to fix all cases. ~Z
 		for(var/obj/item/thing in src.contents)
-			thing.loc = get_turf(src)
+			thing.dropInto(loc)
 		return
 
 	if(wrapped.loc != src)
@@ -163,9 +173,9 @@
 		return
 
 	to_chat(src.loc, "<span class='warning'>You drop \the [wrapped].</span>")
-	wrapped.loc = get_turf(src)
+	wrapped.dropInto(loc)
 	wrapped = null
-	//update_icon()
+	//on_update_icon()
 
 /obj/item/weapon/gripper/attack(mob/living/carbon/M as mob, mob/living/carbon/user as mob)
 	// Don't fall through and smack people with gripper, instead just no-op
@@ -222,40 +232,30 @@
 
 	else if(istype(target,/obj/machinery/power/apc))
 		var/obj/machinery/power/apc/A = target
-		if(A.opened)
-			if(A.cell)
-
-				wrapped = A.cell
-
-				A.cell.add_fingerprint(user)
-				A.cell.update_icon()
-				A.cell.loc = src
-				A.cell = null
-
-				A.charging = 0
-				A.update_icon()
-
-				user.visible_message("<span class='danger'>[user] removes the power cell from [A]!</span>", "You remove the power cell.")
+		if(A.components_are_accessible(/obj/item/weapon/stock_parts/power/battery))
+			var/obj/item/weapon/stock_parts/power/battery/bat = A.get_component_of_type(/obj/item/weapon/stock_parts/power/battery)
+			var/obj/item/weapon/cell/cell = bat.extract_cell(src)
+			if(cell)
+				wrapped = cell
+				cell.forceMove(src)
 
 	else if(istype(target,/mob/living/silicon/robot))
 		var/mob/living/silicon/robot/A = target
 		if(A.opened)
 			if(A.cell)
-
 				wrapped = A.cell
-
 				A.cell.add_fingerprint(user)
 				A.cell.update_icon()
 				A.update_icon()
-				A.cell.loc = src
+				A.cell.forceMove(src)
 				A.cell = null
-
 				user.visible_message("<span class='danger'>[user] removes the power cell from [A]!</span>", "You remove the power cell.")
+				A.power_down()
 
 /obj/item/weapon/gripper/proc/finish_using(var/atom/target, var/mob/living/user, params, force_holder, resolved)
 
 	if(QDELETED(wrapped))
-		wrapped.loc = null
+		wrapped.forceMove(null)
 		wrapped = null
 		return
 
@@ -344,7 +344,7 @@
 
 	for(var/obj/W in T)
 		//Different classes of items give different commodities.
-		if(istype(W,/obj/item/weapon/cigbutt))
+		if(istype(W,/obj/item/trash/cigbutt))
 			if(plastic)
 				plastic.add_charge(500)
 		else if(istype(W,/obj/effect/spider/spiderling))
@@ -428,7 +428,7 @@
 	var/tools = "<B>Tools and devices</B><BR>"
 	var/resources = "<BR><B>Resources</B><BR>"
 
-	for (var/O in module.modules)
+	for (var/O in module.equipment)
 
 		var/module_string = ""
 

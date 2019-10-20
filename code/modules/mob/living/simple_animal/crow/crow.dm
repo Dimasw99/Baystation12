@@ -1,7 +1,7 @@
 /obj/item/weapon/storage/messenger
 	name = "messenger bag"
 	desc = "A small green-grey messenger bag with a blue Corvid Couriers logo on it."
-	icon = 'icons/mob/crow.dmi'
+	icon = 'icons/mob/simple_animal/crow.dmi'
 	icon_state = "messenger_bag"
 	storage_slots = 7
 	w_class = ITEM_SIZE_SMALL
@@ -10,7 +10,7 @@
 /mob/living/simple_animal/crow
 	name = "crow"
 	desc = "A large crow. Caw caw."
-	icon = 'icons/mob/crow.dmi'
+	icon = 'icons/mob/simple_animal/crow.dmi'
 	icon_state = "crow"
 	icon_living = "crow"
 	icon_dead = "crow_dead"
@@ -74,7 +74,7 @@
 					removed = messenger_bag
 					messenger_bag = null
 			if(removed)
-				removed.forceMove(get_turf(src))
+				removed.dropInto(loc)
 				usr.put_in_hands(removed)
 				visible_message("<span class='notice'>\The [usr] removes \the [removed] from \the [src]'s [href_list["remove_inv"]].</span>")
 				show_inv(usr)
@@ -125,7 +125,7 @@
 		if(access_card)
 			to_chat(user, "It has an access cuff with \the [access_card] inserted.")
 
-/mob/living/simple_animal/crow/update_icon()
+/mob/living/simple_animal/crow/on_update_icon()
 	..()
 	overlays -= "bag"
 	overlays -= "bag_dead"
@@ -140,7 +140,7 @@
 	desc = "A large cybercrow. k4w k4w."
 	speak_emote = list("beeps")
 
-/mob/living/simple_animal/crow/cyber/update_icon()
+/mob/living/simple_animal/crow/cyber/on_update_icon()
 	..()
 	overlays -= "cyber"
 	overlays -= "cyber_dead"

@@ -24,6 +24,14 @@
 	on_floor = 1
 	send_material_data = 1
 
+/datum/stack_recipe/coin
+	title = "coin"
+	result_type = /obj/item/weapon/material/coin
+	req_amount = 2
+	one_per_turf = 1
+	on_floor = 1
+	send_material_data = 1
+
 /datum/stack_recipe/ring
 	title = "ring"
 	result_type = /obj/item/clothing/ring/material
@@ -44,8 +52,8 @@
 	send_material_data = 1
 
 /datum/stack_recipe/knife
-	title = "knife"
-	result_type = /obj/item/weapon/material/kitchen/utensil/knife/plastic
+	title = "table knife"
+	result_type = /obj/item/weapon/material/knife/table
 	on_floor = 1
 	difficulty = 2
 	send_material_data = 1
@@ -62,7 +70,7 @@
 	req_amount = 6
 	time = 20
 	on_floor = 1
-	difficulty = 3
+	difficulty = 1
 	send_material_data = 1
 
 /datum/stack_recipe/grip
@@ -71,7 +79,7 @@
 	req_amount = 4
 	time = 20
 	on_floor = 1
-	difficulty = 3
+	difficulty = 1
 	send_material_data = 1
 
 /datum/stack_recipe/key
@@ -103,6 +111,18 @@
 	result_type = /obj/item/frame/light/small
 	difficulty = 2
 
+/datum/stack_recipe/light_switch
+	title = "light switch"
+	result_type = /obj/item/frame/light_switch
+	req_amount = 1
+	difficulty = 2
+
+/datum/stack_recipe/light_switch/windowtint
+	title = "window tint switch"
+	result_type = /obj/item/frame/light_switch/windowtint
+	req_amount = 1
+	difficulty = 2
+
 /datum/stack_recipe/apc
 	title = "APC frame"
 	result_type = /obj/item/frame/apc
@@ -121,29 +141,23 @@
 	req_amount = 2
 	difficulty = 2
 
-/datum/stack_recipe/computer/console
-	title = "modular console frame"
-	result_type = /obj/item/modular_computer/console
-	req_amount = 20
-	difficulty = 3
-
 /datum/stack_recipe/computer/telescreen
 	title = "modular telescreen frame"
 	result_type = /obj/item/modular_computer/telescreen
 	req_amount = 10
-	difficulty = 3
+	difficulty = 2
 
 /datum/stack_recipe/computer/laptop
 	title = "modular laptop frame"
 	result_type = /obj/item/modular_computer/laptop
 	req_amount = 10
-	difficulty = 3
+	difficulty = 2
 
 /datum/stack_recipe/computer/tablet
 	title = "modular tablet frame"
 	result_type = /obj/item/modular_computer/tablet
 	req_amount = 5
-	difficulty = 3
+	difficulty = 2
 
 /datum/stack_recipe/hazard_cone
 	title = "hazard cone"
@@ -151,7 +165,7 @@
 	on_floor = 1
 
 /datum/stack_recipe/ivbag
-	title = "bag"
+	title = "IV bag"
 	result_type = /obj/item/weapon/reagent_containers/ivbag
 	req_amount = 4
 	difficulty = 2
@@ -198,6 +212,7 @@
 	title = "stick"
 	result_type = /obj/item/weapon/material/stick
 	send_material_data = 1
+	difficulty = 0
 
 /datum/stack_recipe/crossbowframe
 	title = "crossbow frame"
@@ -219,11 +234,40 @@
 	title = "cardborg suit"
 	result_type = /obj/item/clothing/suit/cardborg
 	req_amount = 3
+	difficulty = 0
 
 /datum/stack_recipe/cardborg_helmet
 	title = "cardborg helmet"
 	result_type = /obj/item/clothing/head/cardborg
+	difficulty = 0
 
 /datum/stack_recipe/candle
 	title = "candle"
 	result_type = /obj/item/weapon/flame/candle
+	difficulty = 0
+
+/datum/stack_recipe/clipboard
+	title = "clipboard"
+	result_type = /obj/item/weapon/material/clipboard
+	req_amount = 5
+	send_material_data = 1
+
+/datum/stack_recipe/urn
+	title = "urn"
+	result_type = /obj/item/weapon/material/urn
+	req_amount = 5
+	send_material_data = 1
+
+/datum/stack_recipe/drill_head
+	title = "drill head"
+	result_type = /obj/item/weapon/material/drill_head
+	req_amount = 3
+	send_material_data = 1
+	difficulty = 0
+
+/datum/stack_recipe/cross
+	title = "cross"
+	result_type = /obj/item/weapon/material/cross
+	req_amount = 2
+	on_floor = 1
+	send_material_data = 1

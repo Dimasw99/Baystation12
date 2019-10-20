@@ -1,22 +1,21 @@
 //This file was auto-corrected by findeclaration.exe on 25.5.2012 20:42:31
 
-obj/machinery/recharger
+/obj/machinery/recharger
 	name = "recharger"
 	desc = "An all-purpose recharger for a variety of devices."
 	icon = 'icons/obj/stationobjs.dmi'
 	icon_state = "recharger0"
 	anchored = 1
-	use_power = 1
 	idle_power_usage = 4
 	active_power_usage = 30 KILOWATTS
 	var/obj/item/charging = null
-	var/list/allowed_devices = list(/obj/item/weapon/gun/energy, /obj/item/weapon/gun/magnetic/railgun, /obj/item/weapon/melee/baton, /obj/item/weapon/cell, /obj/item/modular_computer/, /obj/item/device/suit_sensor_jammer, /obj/item/weapon/computer_hardware/battery_module, /obj/item/weapon/shield_diffuser, /obj/item/clothing/mask/smokable/ecig, /obj/item/device/radio)
+	var/list/allowed_devices = list(/obj/item/weapon/gun/energy, /obj/item/weapon/gun/magnetic/railgun, /obj/item/weapon/melee/baton, /obj/item/weapon/cell, /obj/item/modular_computer/, /obj/item/device/suit_sensor_jammer, /obj/item/weapon/stock_parts/computer/battery_module, /obj/item/weapon/shield_diffuser, /obj/item/clothing/mask/smokable/ecig, /obj/item/device/radio)
 	var/icon_state_charged = "recharger2"
 	var/icon_state_charging = "recharger1"
 	var/icon_state_idle = "recharger0" //also when unpowered
 	var/portable = 1
 
-obj/machinery/recharger/attackby(obj/item/weapon/G as obj, mob/user as mob)
+/obj/machinery/recharger/attackby(obj/item/weapon/G as obj, mob/user as mob)
 	if(istype(user,/mob/living/silicon))
 		return
 
@@ -53,26 +52,22 @@ obj/machinery/recharger/attackby(obj/item/weapon/G as obj, mob/user as mob)
 		to_chat(user, "You [anchored ? "attached" : "detached"] the recharger.")
 		playsound(loc, 'sound/items/Ratchet.ogg', 75, 1)
 
-obj/machinery/recharger/attack_hand(mob/user as mob)
-	if(istype(user,/mob/living/silicon))
-		return
-
-	..()
-
+/obj/machinery/recharger/physical_attack_hand(mob/user)
 	if(charging)
 		charging.update_icon()
 		user.put_in_hands(charging)
 		charging = null
 		update_icon()
+		return TRUE
 
-obj/machinery/recharger/Process()
+/obj/machinery/recharger/Process()
 	if(stat & (NOPOWER|BROKEN) || !anchored)
-		update_use_power(0)
+		update_use_power(POWER_USE_OFF)
 		icon_state = icon_state_idle
 		return
 
 	if(!charging)
-		update_use_power(1)
+		update_use_power(POWER_USE_IDLE)
 		icon_state = icon_state_idle
 	else
 		var/obj/item/weapon/cell/C = charging.get_cell()
@@ -80,12 +75,12 @@ obj/machinery/recharger/Process()
 			if(!C.fully_charged())
 				icon_state = icon_state_charging
 				C.give(active_power_usage*CELLRATE)
-				update_use_power(2)
+				update_use_power(POWER_USE_ACTIVE)
 			else
 				icon_state = icon_state_charged
-				update_use_power(1)
+				update_use_power(POWER_USE_IDLE)
 
-obj/machinery/recharger/emp_act(severity)
+/obj/machinery/recharger/emp_act(severity)
 	if(stat & (NOPOWER|BROKEN) || !anchored)
 		..(severity)
 		return
@@ -95,14 +90,23 @@ obj/machinery/recharger/emp_act(severity)
 			C.emp_act(severity)
 	..(severity)
 
-obj/machinery/recharger/update_icon()	//we have an update_icon() in addition to the stuff in process to make it feel a tiny bit snappier.
+/obj/machinery/recharger/on_update_icon()	//we have an update_icon() in addition to the stuff in process to make it feel a tiny bit snappier.
 	if(charging)
 		icon_state = icon_state_charging
 	else
 		icon_state = icon_state_idle
 
+/obj/machinery/recharger/examine(mob/user)
+	. = ..()
+	if(!. || isnull(charging))
+		return
 
-obj/machinery/recharger/wallcharger
+	else
+		var/obj/item/weapon/cell/C = charging.get_cell()
+		if(!isnull(C))
+			to_chat(user, "Item's charge at [round(C.percent())]%.")
+
+/obj/machinery/recharger/wallcharger
 	name = "wall recharger"
 	desc = "A heavy duty wall recharger specialized for energy weaponry."
 	icon = 'icons/obj/stationobjs.dmi'

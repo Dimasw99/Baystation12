@@ -4,7 +4,7 @@
 	var/radio_desc = ""
 	icon_state = "headset"
 	item_state = "headset"
-	matter = list(DEFAULT_WALL_MATERIAL = 75)
+	matter = list(MATERIAL_ALUMINIUM = 75)
 	subspace_transmission = 1
 	canhear_range = 0 // can't hear headsets from very far away
 
@@ -12,7 +12,6 @@
 	cell = null
 	power_usage = 0
 	var/translate_binary = 0
-	var/translate_hive = 0
 	var/list/encryption_keys = list()
 	var/max_keys = 2
 
@@ -49,11 +48,8 @@
 /obj/item/device/radio/headset/handle_message_mode(mob/living/M as mob, message, channel)
 	if (channel == "special")
 		if (translate_binary)
-			var/datum/language/binary = all_languages["Robot Talk"]
+			var/datum/language/binary = all_languages[LANGUAGE_ROBOT_GLOBAL]
 			binary.broadcast(M, message)
-		if (translate_hive)
-			var/datum/language/hivemind = all_languages["Hivemind"]
-			hivemind.broadcast(M, message)
 		return null
 
 	return ..()
@@ -68,7 +64,7 @@
 	return -1
 
 /obj/item/device/radio/headset/syndicate
-	origin_tech = list(TECH_ILLEGAL = 3)
+	origin_tech = list(TECH_ESOTERIC = 3)
 	syndie = 1
 	ks1type = /obj/item/device/encryptionkey/syndicate
 
@@ -81,7 +77,7 @@
 	set_frequency(SYND_FREQ)
 
 /obj/item/device/radio/headset/raider
-	origin_tech = list(TECH_ILLEGAL = 2)
+	origin_tech = list(TECH_ESOTERIC = 2)
 	syndie = 1
 	ks1type = /obj/item/device/encryptionkey/raider
 
@@ -90,7 +86,7 @@
 	set_frequency(RAID_FREQ)
 
 /obj/item/device/radio/headset/binary
-	origin_tech = list(TECH_ILLEGAL = 3)
+	origin_tech = list(TECH_ESOTERIC = 3)
 	ks1type = /obj/item/device/encryptionkey/binary
 
 /obj/item/device/radio/headset/headset_sec
@@ -198,7 +194,7 @@
 	return ..(freq, level, 1)
 
 /obj/item/device/radio/headset/heads/rd
-	name = "research director's headset"
+	name = "chief science officer's headset"
 	desc = "Headset of the researching God."
 	icon_state = "com_headset"
 	item_state = "headset"
@@ -252,6 +248,13 @@
 /obj/item/device/radio/headset/ert
 	name = "emergency response team radio headset"
 	desc = "The headset of the boss's boss."
+	icon_state = "com_headset"
+	item_state = "headset"
+	ks1type = /obj/item/device/encryptionkey/ert
+
+/obj/item/device/radio/headset/foundation
+	name = "\improper Foundation radio headset"
+	desc = "The headeset of the occult cavalry."
 	icon_state = "com_headset"
 	item_state = "headset"
 	ks1type = /obj/item/device/encryptionkey/ert
@@ -342,7 +345,6 @@
 /obj/item/device/radio/headset/recalculateChannels(var/setDescription = 0)
 	src.channels = list()
 	src.translate_binary = 0
-	src.translate_hive = 0
 	src.syndie = 0
 	for(var/obj/ekey in encryption_keys)
 		import_key_data(ekey)
@@ -366,8 +368,6 @@
 		src.channels[ch_name] = key.channels[ch_name]
 	if(key.translate_binary)
 		src.translate_binary = 1
-	if(key.translate_hive)
-		src.translate_hive = 1
 	if(key.syndie)
 		src.syndie = 1
 

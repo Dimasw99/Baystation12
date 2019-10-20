@@ -27,6 +27,8 @@
 	var/cold_protection = 0 //flags which determine which body parts are protected from cold. Use the HEAD, UPPER_TORSO, LOWER_TORSO, etc. flags. See setup.dm
 	var/max_heat_protection_temperature //Set this variable to determine up to which temperature (IN KELVIN) the item protects against heat damage. Keep at null to disable protection. Only protects areas set by heat_protection flags
 	var/min_cold_protection_temperature //Set this variable to determine down to which temperature (IN KELVIN) the item protects against cold damage. 0 is NOT an acceptable number due to if(varname) tests!! Keep at null to disable protection. Only protects areas set by cold_protection flags
+	var/max_pressure_protection // Set this variable if the item protects its wearer against high pressures below an upper bound. Keep at null to disable protection.
+	var/min_pressure_protection // Set this variable if the item protects its wearer against low pressures above a lower bound. Keep at null to disable protection. 0 represents protection against hard vacuum.
 
 	var/datum/action/item_action/action = null
 	var/action_button_name //It is also the text which gets displayed on the action button. If not set it defaults to 'Use [name]'. If it's not set, there'll be no button.
@@ -47,7 +49,7 @@
 	var/slowdown_per_slot[slot_last] // How much clothing is slowing you down. This is an associative list: item slot - slowdown
 	var/slowdown_accessory // How much an accessory will slow you down when attached to a worn article of clothing.
 	var/canremove = 1 //Mostly for Ninja code at this point but basically will not allow the item to be removed if set to 0. /N
-	var/list/armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 0, rad = 0)
+	var/list/armor
 	var/list/allowed = null //suit storage stuff.
 	var/obj/item/device/uplink/hidden_uplink = null // All items can have an uplink hidden inside, just remember to add the triggers.
 	var/zoomdevicename = null //name used for message when binoculars/scope is used
@@ -72,7 +74,7 @@
 	/* Species-specific sprites, concept stolen from Paradise//vg/.
 	ex:
 	sprite_sheets = list(
-		SPECIES_TAJARA = 'icons/cat/are/bad'
+		SPECIES_UNATHI = 'icons/lizard/are/bad'
 		)
 	If index term exists and icon_override is not set, this sprite sheet will be used.
 	*/
@@ -88,15 +90,22 @@
 		pixel_x = rand(-randpixel, randpixel)
 		pixel_y = rand(-randpixel, randpixel)
 
+/obj/item/Initialize()
+	. = ..()
+	if(islist(armor))
+		for(var/type in armor)
+			if(armor[type]) // Don't set it if it gives no armor anyway, which is many items.
+				set_extension(src, /datum/extension/armor, /datum/extension/armor, armor)
+				break
+
 /obj/item/Destroy()
-	qdel(hidden_uplink)
-	hidden_uplink = null
+	QDEL_NULL(hidden_uplink)
 	if(ismob(loc))
 		var/mob/m = loc
 		m.drop_from_inventory(src)
-		m.update_inv_r_hand()
-		m.update_inv_l_hand()
-		src.loc = null
+	var/obj/item/weapon/storage/storage = loc
+	if(istype(storage))
+		storage.on_item_deletion()
 	return ..()
 
 /obj/item/device
@@ -115,6 +124,10 @@
 			M.update_inv_r_hand()
 
 /obj/item/proc/is_held_twohanded(mob/living/M)
+
+	if(istype(loc, /obj/item/rig_module) || istype(loc, /obj/item/weapon/rig))
+		return TRUE
+
 	var/check_hand
 	if(M.l_hand == src && !M.r_hand)
 		check_hand = BP_R_HAND //item in left hand, check right hand
@@ -142,20 +155,6 @@
 		if(3)
 			if (prob(5))
 				qdel(src)
-
-/obj/item/verb/move_to_top()
-	set name = "Move To Top"
-	set category = "Object"
-	set src in oview(1)
-
-	if(!istype(src.loc, /turf) || usr.stat || usr.restrained() )
-		return
-
-	var/turf/T = src.loc
-
-	src.loc = null
-
-	src.loc = T
 
 /obj/item/examine(mob/user, var/distance = -1)
 	var/size
@@ -189,7 +188,7 @@
 		if(LAZYLEN(matter))
 			desc_comp += "<span class='notice'>Extractable materials:</span><BR>"
 			for(var/mat in matter)
-				desc_comp += "[get_material_by_name(mat)]<BR>"
+				desc_comp += "[SSmaterials.get_material_by_name(mat)]<BR>"
 		else
 			desc_comp += "<span class='danger'>No extractable materials detected.</span><BR>"
 		desc_comp += "*--------*"
@@ -212,20 +211,23 @@
 			to_chat(user, "<span class='notice'>You try to use your hand, but realize it is no longer attached!</span>")
 			return
 
-	var/old_loc = src.loc
+	var/old_loc = loc
 
-	src.pickup(user)
-	if (istype(src.loc, /obj/item/weapon/storage))
-		var/obj/item/weapon/storage/S = src.loc
+	pickup(user)
+	if (istype(loc, /obj/item/weapon/storage))
+		var/obj/item/weapon/storage/S = loc
 		S.remove_from_storage(src)
 
-	src.throwing = 0
-	if (src.loc == user)
+	throwing = 0
+	if (loc == user)
 		if(!user.unEquip(src))
 			return
 	else
-		if(isliving(src.loc))
+		if(isliving(loc))
 			return
+
+	if(QDELETED(src))
+		return // Unequipping changes our state, so must check here.
 
 	if(user.put_in_active_hand(src))
 		if (isturf(old_loc))
@@ -238,7 +240,6 @@
 		else if(randpixel == 0)
 			pixel_x = 0
 			pixel_y = 0
-	return
 
 /obj/item/attack_ai(mob/user as mob)
 	if (istype(src.loc, /obj/item/weapon/robot_module))
@@ -249,7 +250,10 @@
 		R.activate_module(src)
 		R.hud_used.update_robot_modules_display()
 
-/obj/item/attackby(obj/item/weapon/W as obj, mob/user as mob)
+/obj/item/attackby(obj/item/weapon/W, mob/user)
+	if((. = SSfabrication.try_craft_with(src, W, user)))
+		return
+
 	if(istype(W, /obj/item/weapon/storage))
 		var/obj/item/weapon/storage/S = W
 		if(S.use_to_pickup)
@@ -443,6 +447,9 @@ var/list/global/slot_flags_enumeration = list(
 		return 0
 	return 1
 
+/obj/item/proc/can_be_dropped_by_client(mob/M)
+	return M.canUnEquip(src)
+
 /obj/item/verb/verb_pickup()
 	set src in oview(1)
 	set category = "Object"
@@ -487,21 +494,36 @@ var/list/global/slot_flags_enumeration = list(
 //For non-projectile attacks this usually means the attack is blocked.
 //Otherwise should return 0 to indicate that the attack is not affected in any way.
 /obj/item/proc/handle_shield(mob/user, var/damage, atom/damage_source = null, mob/attacker = null, var/def_zone = null, var/attack_text = "the attack")
-	if(get_parry_chance(user))
-		if(default_parry_check(user, attacker, damage_source) && prob(get_parry_chance()))
+	var/parry_chance = get_parry_chance(user)
+	if(attacker)
+		parry_chance = max(0, parry_chance - 10 * attacker.get_skill_difference(SKILL_COMBAT, user))
+	if(parry_chance)
+		if(default_parry_check(user, attacker, damage_source) && prob(parry_chance))
 			user.visible_message("<span class='danger'>\The [user] parries [attack_text] with \the [src]!</span>")
 			playsound(user.loc, 'sound/weapons/punchmiss.ogg', 50, 1)
-			on_parry()
+			on_parry(damage_source)
 			return 1
 	return 0
 
-/obj/item/proc/on_parry()
+/obj/item/proc/on_parry(damage_source)
 	return
 
 /obj/item/proc/get_parry_chance(mob/user)
 	. = base_parry_chance
 	if(user)
-		. += 15 * (user.get_skill_value(SKILL_COMBAT) - SKILL_BASIC)
+		if(base_parry_chance || user.skill_check(SKILL_COMBAT, SKILL_ADEPT))
+			. += 10 * (user.get_skill_value(SKILL_COMBAT) - SKILL_BASIC)
+
+/obj/item/proc/on_disarm_attempt(mob/target, mob/living/attacker)
+	if(force < 1)
+		return 0
+	if(!istype(attacker))
+		return 0
+	attacker.apply_damage(force, damtype, attacker.hand ? BP_L_HAND : BP_R_HAND, used_weapon = src)
+	attacker.visible_message("<span class='danger'>[attacker] hurts \his hand on [src]!</span>")
+	playsound(target, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
+	playsound(target, hitsound, 50, 1, -1)
+	return 1
 
 /obj/item/proc/get_loc_turf()
 	var/atom/L = loc
@@ -529,14 +551,6 @@ var/list/global/slot_flags_enumeration = list(
 	user.do_attack_animation(M)
 
 	src.add_fingerprint(user)
-	//if((CLUMSY in user.mutations) && prob(50))
-	//	M = user
-		/*
-		to_chat(M, "<span class='warning'>You stab yourself in the eye.</span>")
-		M.sdisabilities |= BLIND
-		M.weakened += 4
-		M.adjustBruteLoss(10)
-		*/
 
 	if(istype(H))
 
@@ -583,6 +597,7 @@ var/list/global/slot_flags_enumeration = list(
 	if(istype(src, /obj/item/clothing/gloves))
 		var/obj/item/clothing/gloves/G = src
 		G.transfer_blood = 0
+	trace_DNA = null
 
 /obj/item/reveal_blood()
 	if(was_bloodied && !fluorescent)
@@ -614,18 +629,20 @@ var/list/global/slot_flags_enumeration = list(
 		blood_DNA[M.dna.unique_enzymes] = M.dna.b_type
 	return 1 //we applied blood to the item
 
-/obj/item/proc/generate_blood_overlay()
-	if(blood_overlay)
-		return
+GLOBAL_LIST_EMPTY(blood_overlay_cache)
 
+/obj/item/proc/generate_blood_overlay(force = FALSE)
+	if(blood_overlay && !force)
+		return
+	if(GLOB.blood_overlay_cache["[icon]" + icon_state])
+		blood_overlay = GLOB.blood_overlay_cache["[icon]" + icon_state]
+		return
 	var/icon/I = new /icon(icon, icon_state)
 	I.Blend(new /icon('icons/effects/blood.dmi', rgb(255,255,255)),ICON_ADD) //fills the icon_state with white (except where it's transparent)
 	I.Blend(new /icon('icons/effects/blood.dmi', "itemblood"),ICON_MULTIPLY) //adds blood and the remaining white areas become transparant
-
-	//not sure if this is worth it. It attaches the blood_overlay to every item of the same type if they don't have one already made.
-	for(var/obj/item/A in world)
-		if(A.type == type && !A.blood_overlay)
-			A.blood_overlay = image(I)
+	blood_overlay = image(I)
+	blood_overlay.appearance_flags |= NO_CLIENT_COLOR
+	GLOB.blood_overlay_cache["[icon]" + icon_state] = blood_overlay
 
 /obj/item/proc/showoff(mob/user)
 	for (var/mob/M in view(user))
@@ -782,16 +799,55 @@ modules/mob/living/carbon/human/life.dm if you die, you will be zoomed out.
 	return overlay_image(mob_icon, mob_state, color, RESET_COLOR)
 
 /obj/item/proc/get_examine_line()
-	if(blood_DNA)
-		. = "<span class='warning'>\icon[src] [gender==PLURAL?"some":"a"] [(blood_color != SYNTH_BLOOD_COLOUR) ? "blood" : "oil"]-stained [src]</span>"
+	if(blood_color)
+		. = SPAN_WARNING("\icon[src] [gender==PLURAL?"some":"a"] <font color='[blood_color]'>stained</font> [src]")
 	else
 		. = "\icon[src] \a [src]"
 	var/ID = GetIdCard()
 	if(ID)
 		. += "  <a href='?src=\ref[ID];look_at_id=1'>\[Look at ID\]</a>"
 
+/obj/item/proc/on_active_hand()
+
 /obj/item/is_burnable()
 	return simulated
 
 /obj/item/lava_act()
 	. = (!throwing) ? ..() : FALSE
+
+/obj/item/proc/has_embedded()
+	return
+
+/obj/item/proc/get_pressure_weakness(pressure)
+	. = 1
+	if(pressure > ONE_ATMOSPHERE)
+		if(max_pressure_protection != null)
+			if(max_pressure_protection < pressure)
+				return min(1, round((pressure - max_pressure_protection) / max_pressure_protection, 0.01))
+			else
+				return 0
+	if(pressure < ONE_ATMOSPHERE)
+		if(min_pressure_protection != null)
+			if(min_pressure_protection > pressure)
+				return min(1, round((min_pressure_protection - pressure) / min_pressure_protection, 0.01))
+			else
+				return 0
+
+/obj/item/do_simple_ranged_interaction(var/mob/user)
+	if(user)
+		attack_self(user)
+	return TRUE
+
+/obj/item/proc/inherit_custom_item_data(var/datum/custom_item/citem)
+	. = src
+	if(citem.item_name)
+		SetName(citem.item_name)
+	if(citem.item_desc)
+		desc = citem.item_desc
+	if(citem.item_icon_state)
+		item_state_slots = null
+		item_icons = null
+		icon = CUSTOM_ITEM_OBJ
+		set_icon_state(citem.item_icon_state)
+		item_state = null
+		icon_override = CUSTOM_ITEM_MOB

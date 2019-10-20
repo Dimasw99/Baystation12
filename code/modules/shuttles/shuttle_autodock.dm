@@ -16,7 +16,7 @@
 	var/move_time = 240		//the time spent in the transition area
 
 	category = /datum/shuttle/autodock
-	flags = SHUTTLE_FLAGS_PROCESS
+	flags = SHUTTLE_FLAGS_PROCESS | SHUTTLE_FLAGS_ZERO_G
 
 /datum/shuttle/autodock/New(var/_name, var/obj/effect/shuttle_landmark/start_waypoint)
 	..(_name, start_waypoint)
@@ -57,7 +57,7 @@
 		current_dock_target = location.special_dock_targets[name]
 	else
 		current_dock_target = dock_target
-	shuttle_docking_controller = locate(current_dock_target)
+	shuttle_docking_controller = SSshuttle.docking_registry[current_dock_target]
 /*
 	Docking stuff
 */
@@ -123,7 +123,7 @@
 	return move_time
 
 /datum/shuttle/autodock/proc/process_launch()
-	if(!next_location.is_valid(src))
+	if(!next_location.is_valid(src) || current_location.cannot_depart(src))
 		process_state = IDLE_STATE
 		in_use = null
 		return
@@ -137,10 +137,10 @@
 	Guards
 */
 /datum/shuttle/autodock/proc/can_launch()
-	return (next_location && moving_status == SHUTTLE_IDLE && !in_use)
+	return (next_location && next_location.is_valid(src) && !current_location.cannot_depart(src) && moving_status == SHUTTLE_IDLE && !in_use)
 
 /datum/shuttle/autodock/proc/can_force()
-	return (next_location && moving_status == SHUTTLE_IDLE && process_state == WAIT_LAUNCH)
+	return (next_location && next_location.is_valid(src) && !current_location.cannot_depart(src) && moving_status == SHUTTLE_IDLE && process_state == WAIT_LAUNCH)
 
 /datum/shuttle/autodock/proc/can_cancel()
 	return (moving_status == SHUTTLE_WARMUP || process_state == WAIT_LAUNCH || process_state == FORCE_LAUNCH)
@@ -184,3 +184,6 @@
 //Note that this is called when the shuttle leaves the WAIT_FINISHED state, the proc name is a little misleading
 /datum/shuttle/autodock/proc/arrived()
 	return	//do nothing for now
+
+/obj/effect/shuttle_landmark/transit
+	flags = SLANDMARK_FLAG_ZERO_G

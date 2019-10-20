@@ -24,18 +24,20 @@ Thus, the two variables affect pump operation are set in New():
 
 	//var/max_volume_transfer = 10000
 
-	use_power = 0
+	use_power = POWER_USE_OFF
 	idle_power_usage = 150		//internal circuitry, friction losses and stuff
-	power_rating = 7500			//7500 W ~ 10 HP
+	power_rating = 30000			// 30000 W ~ 40 HP
 
 	var/max_pressure_setting = MAX_PUMP_PRESSURE
 
 	var/frequency = 0
 	var/id = null
 	var/datum/radio_frequency/radio_connection
+	connect_types = CONNECT_TYPE_REGULAR|CONNECT_TYPE_FUEL
+	build_icon_state = "pump"
 
-/obj/machinery/atmospherics/binary/pump/New()
-	..()
+/obj/machinery/atmospherics/binary/pump/Initialize()
+	. = ..()
 	air1.volume = ATMOS_DEFAULT_VOLUME_PUMP
 	air2.volume = ATMOS_DEFAULT_VOLUME_PUMP
 
@@ -44,10 +46,10 @@ Thus, the two variables affect pump operation are set in New():
 
 /obj/machinery/atmospherics/binary/pump/on
 	icon_state = "map_on"
-	use_power = 1
+	use_power = POWER_USE_IDLE
 
 
-/obj/machinery/atmospherics/binary/pump/update_icon()
+/obj/machinery/atmospherics/binary/pump/on_update_icon()
 	if(!powered())
 		icon_state = "off"
 	else
@@ -82,7 +84,7 @@ Thus, the two variables affect pump operation are set in New():
 
 	if (power_draw >= 0)
 		last_power_draw = power_draw
-		use_power(power_draw)
+		use_power_oneoff(power_draw)
 
 		if(network1)
 			network1.update = 1
@@ -98,7 +100,7 @@ Thus, the two variables affect pump operation are set in New():
 	radio_controller.remove_object(src, frequency)
 	frequency = new_frequency
 	if(frequency)
-		radio_connection = radio_controller.add_object(src, frequency, filter = RADIO_ATMOSIA)
+		radio_connection = radio_controller.add_object(src, frequency, radio_filter = RADIO_ATMOSIA)
 
 /obj/machinery/atmospherics/binary/pump/proc/broadcast_status()
 	if(!radio_connection)
@@ -116,7 +118,7 @@ Thus, the two variables affect pump operation are set in New():
 		"sigtype" = "status"
 	)
 
-	radio_connection.post_signal(src, signal, filter = RADIO_ATMOSIA)
+	radio_connection.post_signal(src, signal, radio_filter = RADIO_ATMOSIA)
 
 	return 1
 
@@ -151,18 +153,22 @@ Thus, the two variables affect pump operation are set in New():
 	if(frequency)
 		set_frequency(frequency)
 
+/obj/machinery/atmospherics/binary/pump/Destroy()
+	unregister_radio(src, frequency)
+	. = ..()
+
 /obj/machinery/atmospherics/binary/pump/receive_signal(datum/signal/signal)
 	if(!signal.data["tag"] || (signal.data["tag"] != id) || (signal.data["sigtype"]!="command"))
 		return 0
 
 	if(signal.data["power"])
 		if(text2num(signal.data["power"]))
-			use_power = 1
+			update_use_power(POWER_USE_IDLE)
 		else
-			use_power = 0
+			update_use_power(POWER_USE_OFF)
 
 	if("power_toggle" in signal.data)
-		use_power = !use_power
+		update_use_power(!use_power)
 
 	if(signal.data["set_output_pressure"])
 		target_pressure = between(
@@ -181,22 +187,15 @@ Thus, the two variables affect pump operation are set in New():
 	update_icon()
 	return
 
-/obj/machinery/atmospherics/binary/pump/attack_hand(user as mob)
-	if(..())
-		return
-	src.add_fingerprint(usr)
-	if(!src.allowed(user))
-		to_chat(user, "<span class='warning'>Access denied.</span>")
-		return
-	usr.set_machine(src)
+/obj/machinery/atmospherics/binary/pump/interface_interact(mob/user)
 	ui_interact(user)
-	return
+	return TRUE
 
 /obj/machinery/atmospherics/binary/pump/Topic(href,href_list)
 	if((. = ..())) return
 
 	if(href_list["power"])
-		use_power = !use_power
+		update_use_power(!use_power)
 		. = 1
 
 	switch(href_list["set_press"])
@@ -233,5 +232,5 @@ Thus, the two variables affect pump operation are set in New():
 			"<span class='notice'>\The [user] unfastens \the [src].</span>", \
 			"<span class='notice'>You have unfastened \the [src].</span>", \
 			"You hear ratchet.")
-		new /obj/item/pipe(loc, make_from=src)
+		new /obj/item/pipe(loc, src)
 		qdel(src)
